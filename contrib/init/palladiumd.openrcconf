@@ -1,0 +1,33 @@
+# /etc/conf.d/palladiumd: config file for /etc/init.d/palladiumd
+
+# Config file location
+#PALLADIUMD_CONFIGFILE="/etc/palladium/palladium.conf"
+
+# What directory to write pidfile to?  (created and owned by $PALLADIUMD_USER)
+#PALLADIUMD_PIDDIR="/var/run/palladiumd"
+
+# What filename to give the pidfile
+#PALLADIUMD_PIDFILE="${PALLADIUMD_PIDDIR}/palladiumd.pid"
+
+# Where to write palladiumd data (be mindful that the blockchain is large)
+#PALLADIUMD_DATADIR="/var/lib/palladiumd"
+
+# User and group to own palladiumd process
+#PALLADIUMD_USER="palladium"
+#PALLADIUMD_GROUP="palladium"
+
+# Path to palladiumd executable
+#PALLADIUMD_BIN="/usr/bin/palladiumd"
+
+# Nice value to run palladiumd under
+#PALLADIUMD_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#PALLADIUMD_OPTS=""
+
+# The timeout in seconds OpenRC will wait for palladiumd to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+PALLADIUMD_SIGTERM_TIMEOUT=600
