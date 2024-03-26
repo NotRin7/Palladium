@@ -17,13 +17,15 @@ Join us in shaping the future of digital transactions within the palladium marke
 run the Wallet:
 
 1. Install the Walllet and start it
-     2. on Windows
+   
+2. on Windows
          2.1 go to %appdata%/Palladium
          2.2 create a file "palladium.conf"
          2.3 add the following line "addnode=212.132.102.41"
 
-    2. on Linux
+2. on Linux
          2.1 go to /home/"user"/.palladium
          2.2 create a file "palladium.conf"
          2.3 add the following line "addnode=212.132.102.41"
+       
 3. Restart the Wallet
