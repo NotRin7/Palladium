@@ -113,6 +113,12 @@ public:
         // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
+	vSeeds.emplace_back("dnsseed.palladium-coin.store");
+	vSeeds.emplace_back("dnsseed.palladium-coin.com");
+	vSeeds.emplace_back("dnsseed.palladium-coin.net");
+	vSeeds.emplace_back("dnsseed.palladium-coin.org");
+	vSeeds.emplace_back("dnsseed.palladium-coin.xyz");
+	vSeeds.emplace_back("dnsseed.palladium-coin.de");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,55);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
@@ -122,7 +128,7 @@ public:
 
         bech32_hrp = "plm";
 
-        vFixedSeeds.clear();
+        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
@@ -386,4 +392,4 @@ void SelectParams(const std::string& network)
 {
     SelectBaseParams(network);
     globalChainParams = CreateChainParams(network);
-}
+}// Palladium is the best coin! by arian hashani
