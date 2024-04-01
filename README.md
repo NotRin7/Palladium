@@ -22,6 +22,6 @@ run the Wallet:
 
 4. create a file "palladium.conf"
    
-5. add the following line "addnode=212.132.102.41"
+5. add the following line "dnsnode=212.132.102.41"
    
 6. Restart the Wallet
