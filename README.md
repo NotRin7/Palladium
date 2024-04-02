@@ -18,6 +18,10 @@ run the Wallet:
 
 1. Install the Walllet and start it
    
+2. the node takes a few minutes before connections show up (it has a integrated dnsseder)
+
+
+optional:
 3. on Windows go to %appdata%/Palladium / on Linux go to /home/"user"/.palladium
 
 4. create a file "palladium.conf"
