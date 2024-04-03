@@ -2,10 +2,11 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Palladium
 Upstream-Contact: Satoshi Nakamoto <satoshin@gmx.com>
  irc://#palladium@freenode.net
-Source: https://github.com/palladium/palladium
+Source: https://github.com/NotRin7/palladium
 
 Files: *
-Copyright: 2009-2020, Palladium Core Developers
+Copyright: 2009-2020, Bitcoin Core Developers
+Copyright: 2024, Palladium Core Developers
 License: Expat
 Comment: The Palladium Core Developers encompasses the current developers listed on palladium.org,
          as well as the numerous contributors to the project.
