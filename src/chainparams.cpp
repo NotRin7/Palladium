@@ -63,7 +63,7 @@ class CMainParams : public CChainParams {
 public:
     CMainParams() {
         strNetworkID = CBaseChainParams::MAIN;
-        consensus.nSubsidyHalvingInterval = 210000;
+        consensus.nSubsidyHalvingInterval = 100000000;
         consensus.BIP16Exception = uint256S("0x00000000000002dc756eebf4f49723ed8d30cc28a5f108eb94b1ba88ac4f9c22");
         consensus.BIP34Height = 30000;
         consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
@@ -73,12 +73,12 @@ public:
         consensus.SegwitHeight = 30000; // 0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893
         consensus.MinBIP9WarningHeight = 30000; // segwit activation height + miner confirmation window
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
-        consensus.nPowTargetSpacing = 10 * 60;
+        consensus.nPowTargetTimespan = 0.025 * 24 * 60 * 60; // 36 Minutes
+        consensus.nPowTargetSpacing = 2 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
-        consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
-        consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+        consensus.nRuleChangeActivationThreshold = 475; // 95% of 500
+        consensus.nMinerConfirmationWindow = 500; // PowTargetTimespan / nPowTargetSpacing
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
@@ -141,15 +141,16 @@ public:
                 {0, uint256S("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")},
                 {69, uint256S("0x00000000ae75d0169080e9f0ddbcd80827eda623cfe1f4a2b1be6dcd49b916e6")},
 		{10000, uint256S("0x0000000001608f591faaffdf8e7efe89f7ace0dbf2b5f2fa3ac8da3b4e59442f")},
-		{20000, uint256S("0x0000000001608f591faaffdf8e7efe89f7ace0dbf2b5f2fa3ac8da3b4e59442f")}
+		{20000, uint256S("0x00000000000018ffaa9a332cfb418b5c8c3f988cf26598e378bbea9e93d26f74")},
+		{28879, uint256S("0x0000000000000017e9e74b9b403b775098905418b1333e9612f510af66746aa7")}
             }
         };
 
         chainTxData = ChainTxData{
-            // Data from RPC: getchaintxstats 4096 0000000000000000000f2adce67e49b0b6bdeb9de8b7c3d7e93b21e7fc1e819d
-            /* nTime    */ 1585764811,
-            /* nTxCount */ 517186863,
-            /* dTxRate  */ 3.305709665792344,
+            // Data from RPC: getchaintxstats 10000 00000000000018ffaa9a332cfb418b5c8c3f988cf26598e378bbea9e93d26f74
+            /* nTime    */ 1711734350,
+            /* nTxCount */ 20016,
+            /* dTxRate  */ 0.3166703578321258,
         };
     }
 };
