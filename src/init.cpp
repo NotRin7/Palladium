@@ -1244,9 +1244,37 @@ bool AppInitMain(NodeContext& node)
         InitWarning(strprintf(_("The specified config file %s does not exist\n").translated, config_file_path.string()));
     } else {
         // Not categorizing as "Warning" because it's the default behavior
-        LogPrintf("Config file: %s (not found, skipping)\n", config_file_path.string());
-    }
+        //LogPrintf("Config file: %s (not found, skipping)\n", config_file_path.string());
 
+        FILE* configFile = fopen(GetConfigFile(gArgs.GetArg("-conf", PALLADIUM_CONF_FILENAME)).string().c_str(), "a");
+        if (configFile != NULL) {
+            std::string strHeader = "# Palladium(PLM) config file:\n"
+                                    "rpcuser=username\n"
+                                    "rpcpassword=password\n"
+                                    "server=1\n"
+                                    "listen=1\n"
+                                    "daemon=1\n"
+                                    "upnp=1\n"
+                                    "port=2333\n"
+                                    "rpcport=2332\n"
+                                    "rpcbind=127.0.0.1\n"
+                                    "maxconnections=20\n"
+                                    "fallbackfee=0.0001\n"
+                                    "rpcallowip=127.0.0.1\n"
+                                    "deprecatedrpc=accounts\n"
+                                    "\n"
+                                    "# Addnodes:\n"
+                                    "addnode=dnsseed.palladium-coin.store\n"
+                                    "addnode=2.243.141.227:23333\n"
+                                    "addnode=212.132.102.41:23333\n"
+                                    "addnode=103.185.248.171:23333\n"
+                                    "addnode=64.176.219.137:2323\n"
+                                    "addnode=149.28.45.189:2323\n"
+                                    "\n";
+            fwrite(strHeader.c_str(), std::strlen(strHeader.c_str()), 1, configFile);
+            fclose(configFile);
+        }
+    }
     // Log the config arguments to debug.log
     gArgs.LogArgs();
 
