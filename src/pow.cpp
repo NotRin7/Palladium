@@ -14,13 +14,12 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 {
     assert(pindexLast != nullptr);
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
-    unsigned int nProofOfWorkLimitV2 = UintToArith256(params.powLimitV2).GetCompact();
 
     // reset difficulty for new diff algorithm's average + Segwit/CSV activation
-    if (pindexLast->nHeight >= 28927)
-        return nProofOfWorkLimitV2;
+    if (pindexLast->nHeight >= 28928)
+        return nProofOfWorkLimit;
 
-    if (pindexLast->nHeight >= 28930)
+    if (pindexLast->nHeight >= 29000)
         return LwmaCalculateNextWorkRequired(pindexLast, params);
 
     // Only change once per difficulty adjustment interval
