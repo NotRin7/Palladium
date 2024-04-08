@@ -16,7 +16,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
     // reset difficulty for new diff algorithm's average + Segwit/CSV activation
-    if ((pindexLast->nHeight >= 28928) && (pindexLast->nHeight <= 28999))
+    if ((pindexLast->nHeight >= 28930) && (pindexLast->nHeight <= 28999))
         return nProofOfWorkLimit;
 
     if (pindexLast->nHeight >= 29000)
