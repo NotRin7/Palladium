@@ -259,7 +259,7 @@
 #define LT_OBJDIR ".libs/"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "https://github.com/palladium/palladium/issues"
+#define PACKAGE_BUGREPORT "https://github.com/NotRin7/palladium/issues"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "Palladium Core"
@@ -271,7 +271,7 @@
 #define PACKAGE_TARNAME "palladium"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL "https://palladiumcore.org/"
+#define PACKAGE_URL "https://palladium-coin.com/"
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "1.3.0"
