@@ -5,7 +5,7 @@ Setup
 ---------------------
 Palladium Core is the original Palladium client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Palladium transactions, which requires a few hundred gigabytes of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
 
-To download Palladium Core, visit [palladiumcore.org](https://palladiumcore.org/en/download/).
+To download Palladium Core, visit [palladiumcore.org]([https://github.com/NotRin7/Palladium/releases/).
 
 Running
 ---------------------
@@ -28,10 +28,7 @@ Drag Palladium Core to your applications folder, and then run Palladium Core.
 
 ### Need Help?
 
-* See the documentation at the [Palladium Wiki](https://en.palladium.it/wiki/Main_Page)
-for help and more information.
-* Ask for help on [#palladium](https://webchat.freenode.net/#palladium) on Freenode. If you don't have an IRC client, use [webchat here](https://webchat.freenode.net/#palladium).
-* Ask for help on the [PalladiumTalk](https://palladiumtalk.org/) forums, in the [Technical Support board](https://palladiumtalk.org/index.php?board=4.0).
+* Ask for help on [Discord]([https://discord.com/invite/z2T8qvzeGc]).
 
 Building
 ---------------------
