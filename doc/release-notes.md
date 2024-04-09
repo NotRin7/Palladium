@@ -1,20 +1,20 @@
-0.20.1 Release Notes
+1.3.0 Release Notes
 ====================
 
-Palladium Core version 0.20.1 is now available from:
+Palladium Core version 1.3.0 is now available from:
 
-  <https://palladiumcore.org/bin/palladium-core-0.20.1/>
+  <https://github.com/NotRin7/Palladium/releases/tag/v1.3.0>
 
 This minor release includes various bug fixes and performance
 improvements, as well as updated translations.
 
 Please report bugs using the issue tracker at GitHub:
 
-  <https://github.com/palladium/palladium/issues>
+  <https://github.com/NotRin7/palladium/issues>
 
 To receive security and update notifications, please subscribe to:
 
-  <https://palladiumcore.org/en/list/announcements/join/>
+  <https://palladium-coin.com/>
 
 How to Upgrade
 ==============
