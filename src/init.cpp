@@ -1265,12 +1265,8 @@ bool AppInitMain(NodeContext& node)
                                     "deprecatedrpc=accounts\n"
                                     "\n"
                                     "# Addnodes:\n"
-                                    "addnode=dnsseed.palladium-coin.store\n"
-                                    "addnode=2.243.141.227:23333\n"
+                                    "seednode=dnsseed.palladium-coin.store\n"
                                     "addnode=212.132.102.41:23333\n"
-                                    "addnode=103.185.248.171:23333\n"
-                                    "addnode=64.176.219.137:2323\n"
-                                    "addnode=149.28.45.189:2323\n"
                                     "\n";
             fwrite(strHeader.c_str(), std::strlen(strHeader.c_str()), 1, configFile);
             fclose(configFile);
