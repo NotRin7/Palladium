@@ -26,6 +26,11 @@ optional:
 
 4. create a file "palladium.conf"
    
-5. add the following line "addnode=212.132.102.41"
+5. add the following line
+6. "addnode=212.132.102.41
+addnode=plm.minecraftpool.com
+addnode=89.117.149.130
+addnode=66.94.115.80
+addnode=173.212.224.67"
    
-6. Restart the Wallet
+8. Restart the Wallet
