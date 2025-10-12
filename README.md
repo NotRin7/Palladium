@@ -17,9 +17,9 @@ Palladium Core is a decentralized digital currency forked from Bitcoin, specific
 
 ### Installation
 
-1. **Download and Install**: Get the latest Palladium Core wallet from our [releases page](https://github.com/palladium-coin/palladium/releases)
-2. **Initial Startup**: Launch the wallet application
-3. **Network Sync**: Allow a few minutes for initial network connections (integrated DNS seeder will establish connections automatically)
+1. **Download and Install**: Get the latest Palladium Core wallet from our [releases page](https://github.com/davide3011/palladiumcore/releases/tag/v1.3.0)
+2. **Configure**: Create the `palladium.conf` configuration file (see [Configuration](#advanced-configuration) section below)
+3. **Launch the Core**: Start the Palladium Core application (includes automatic network synchronization)
 
 ### Configuration
 
@@ -92,8 +92,8 @@ zmqpubhashblock=tcp://0.0.0.0:28332
 
 ```bash
 # Clone repository
-git clone https://github.com/palladium-coin/palladium.git
-cd palladium
+git clone https://github.com/davide3011/palladiumcore.git
+cd palladiumcore
 
 # Generate build files
 ./autogen.sh
