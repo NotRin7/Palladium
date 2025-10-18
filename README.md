@@ -133,7 +133,7 @@ Palladium Core is released under the terms of the MIT license. See [COPYING](COP
 - **Documentation**: [Wiki](https://github.com/palladium-coin/palladium/wiki)
 - **Issues**: [GitHub Issues](https://github.com/palladium-coin/palladium/issues)
 - **Community**: [Discord](https://discord.gg/palladium) | [Telegram](https://t.me/palladiumcoin)
-- **Website**: [palladium-coin.com](https://palladium-coin.com)
+- **Website**: [palladiumblockchain.net](https://palladiumblockchain.net/)
 
 ## Acknowledgments
 
