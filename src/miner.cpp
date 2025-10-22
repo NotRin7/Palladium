@@ -24,10 +24,6 @@
 #include <algorithm>
 #include <utility>
 
-
-#include <chainparams.h>
-
-
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
     int64_t nOldTime = pblock->nTime;
@@ -426,107 +422,6 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected, int &nDescendantsUpda
         // Update transactions that depend on each of these
         nDescendantsUpdated += UpdatePackagesForAdded(ancestors, mapModifiedTx);
     }
-}
-
-
-// Method to compute block version
-// Currently just returns BASE_VERSION, needs update for BIP9 signaling if used
-// static int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params)
-// {
-     // Implement BIP9 version bit signaling logic here if needed
-     // ...
-//     return CBlockHeader::BASE_VERSION; // Return base version for now
-// }
-
-std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& scriptPubKeyIn)
-{
-    int64_t nTimeStart = GetTimeMicros();
-
-    ResetBlock();
-
-    pblocktemplate = std::make_unique<CBlockTemplate>();
-    pblock = &pblocktemplate->block; // pointer for convenience
-
-    // Add dummy coinbase tx as first transaction
-    pblock->vtx.emplace_back();
-    pblocktemplate->vTxFees.push_back(-1); // updated at end
-    pblocktemplate->vTxSigOpsCost.push_back(-1); // updated at end
-
-    LOCK2(cs_main, m_mempool.cs);
-    CBlockIndex* pindexPrev = ::ChainActive().Tip();
-    assert(pindexPrev != nullptr);
-    nHeight = pindexPrev->nHeight + 1;
-
-    // --- AuxPoW Start ---
-    // Set base version first
-    pblock->nVersion = CBlockHeader::BASE_VERSION; // ComputeBlockVersion(pindexPrev, chainparams.GetConsensus());
-    // Add AuxPoW version bit if fork is active
-    const Consensus::Params& consensusParams = chainparams.GetConsensus();
-    if (nHeight >= consensusParams.nAuxpowStartHeight) {
-        pblock->nVersion |= CBlockHeader::AUXPOW_VERSION_BIT;
-         LogPrintf("CreateNewBlock: Setting AuxPoW version bit for block height %d\n", nHeight);
-    }
-    // --- AuxPoW Ende ---
-
-    // -regtest only: allow overriding block.nVersion with
-    // -blockversion=N to test forking scenarios
-    if (chainparams.MineBlocksOnDemand())
-        pblock->nVersion = gArgs.GetArg("-blockversion", pblock->nVersion);
-
-    pblock->nTime = GetAdjustedTime();
-    const int64_t nMedianTimePast = pindexPrev->GetMedianTimePast();
-
-    nLockTimeCutoff = (STANDARD_LOCKTIME_VERIFY_FLAGS & LOCKTIME_MEDIAN_TIME_PAST)
-                       ? nMedianTimePast
-                       : pblock->GetBlockTime();
-
-    // Decide whether to include witness transactions
-    // Typically based on Segwit activation height
-    bool fIncludeWitness = IsWitnessEnabled(pindexPrev, consensusParams);
-
-    int nPackagesSelected = 0;
-    int nDescendantsUpdated = 0;
-    addPackageTxs(nPackagesSelected, nDescendantsUpdated);
-
-    int64_t nTime1 = GetTimeMicros();
-
-    m_last_block_num_txs = nBlockTx;
-    m_last_block_weight = nBlockWeight;
-
-    // Create coinbase transaction.
-    CMutableTransaction coinbaseTx;
-    coinbaseTx.vin.resize(1);
-    coinbaseTx.vin[0].prevout.SetNull();
-    coinbaseTx.vout.resize(1);
-    coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
-    coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, consensusParams);
-    coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0; // OP_0 statt nExtraNonce? Prüfe Coinbase-Regeln
-    // nExtraNonce logic seems missing or different in this base code? Add if needed.
-    // If nExtraNonce is used, it should be part of scriptSig generation.
-
-    pblock->vtx[0] = MakeTransactionRef(std::move(coinbaseTx));
-    pblocktemplate->vchCoinbaseCommitment = GenerateCoinbaseCommitment(*pblock, pindexPrev, consensusParams);
-    pblocktemplate->vTxFees[0] = -nFees;
-
-    LogPrintf("CreateNewBlock(): block weight: %u txs: %u fees: %ld sigops_cost: %d\n",
-        GetBlockWeight(*pblock), nBlockTx, nFees, nBlockSigOpsCost);
-
-    // Fill in header
-    pblock->hashPrevBlock = pindexPrev->GetBlockHash();
-    UpdateTime(pblock, consensusParams, pindexPrev);
-    pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
-    pblock->nNonce = 0; // Nonce wird vom Miner gesetzt
-    pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
-
-    CValidationState state;
-    if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev, false, false)) {
-        throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s", __func__, state.ToString()));
-    }
-    int64_t nTime2 = GetTimeMicros();
-
-    LogPrint(BCLog::BENCH, "CreateNewBlock() packages: %.2fms (%d packages, %d updated descendants), validity: %.2fms (total %.2fms)\n", 0.001 * (nTime1 - nTimeStart), nPackagesSelected, nDescendantsUpdated, 0.001 * (nTime2 - nTime1), 0.001 * (nTime2 - nTimeStart));
-
-    return std::move(pblocktemplate);
 }
 
 void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned int& nExtraNonce)
