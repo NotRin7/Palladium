@@ -73,26 +73,35 @@ public:
         consensus.BIP66Height = 29000;
         consensus.CSVHeight = 29000;
         consensus.SegwitHeight = 29000;
-        consensus.MinBIP9WarningHeight = 29240; // segwit activation height + miner confirmation window
+
+        consensus.MinBIP9WarningHeight = 29540; // segwit activation height + miner confirmation window
+
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
-        consensus.nPowTargetSpacing = 10 * 60;
-        consensus.nPowTargetSpacingV2 = 2 * 60;
+
+        consensus.nPowTargetTimespan = 24 * 60 * 60;    // 86400 seconds
+        consensus.nPowTargetSpacing = 10 * 60;  // old (before block 29000/LWMA)
+        consensus.nPowTargetSpacingV2 = 2 * 60; //120 seconds
+
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
-        consensus.nRuleChangeActivationThreshold = 1916;
-        consensus.nMinerConfirmationWindow = 2016;
+
+        //24h Timespan / 2 Min Spacing = 720 blocks
+        consensus.nRuleChangeActivationThreshold = 720;
+        consensus.nMinerConfirmationWindow = 540;   // 720 * 0.75
 
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999;
 
-        // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000001578157d557d557aa0");
 
+        // Chainwork Block 308000
+        // The best chain should have at least this much work.
+        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000009a5fd670f7a9ae6f2e");
+
+        // Blockhash Block 308000
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x0000000000000014351dee34029945d5a4dea299ec8843626695c88b084b4d10");
+        consensus.defaultAssumeValid = uint256S("0x000000000000174621a036477c7edff5648052fa268133658561e9ca840831be");
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
