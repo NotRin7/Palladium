@@ -1256,6 +1256,7 @@ bool AppInitMain(NodeContext& node)
                                     "listen=1\n"
                                     "daemon=1\n"
                                     "upnp=1\n"
+                                    "txindex=1\n"
                                     "port=2333\n"
                                     "rpcport=2332\n"
                                     "rpcbind=127.0.0.1\n"
@@ -1266,7 +1267,16 @@ bool AppInitMain(NodeContext& node)
                                     "\n"
                                     "# Addnodes:\n"
                                     "seednode=dnsseed.palladium-coin.store\n"
-                                    "addnode=212.132.102.41:23333\n"
+                                    "\n"
+                                    "addnode=89.117.149.130:2333\n"
+                                    "addnode=66.94.115.80:2333\n"
+                                    "addnode=173.212.224.67:2333\n"
+                                    "addnode=82.165.218.152:2333\n"
+                                    "\n"
+                                    "# ZeroMQ Configuration\n"
+                                    "zmqpubrawblock=tcp://0.0.0.0:28334\n"
+                                    "zmqpubrawtx=tcp://0.0.0.0:28335\n"
+                                    "zmqpubhashblock=tcp://0.0.0.0:28332\n"
                                     "\n";
             fwrite(strHeader.c_str(), std::strlen(strHeader.c_str()), 1, configFile);
             fclose(configFile);
