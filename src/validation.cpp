@@ -52,6 +52,16 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 
+#include <map> // Für mapBlockIndex Zugriff
+
+// --- AuxPoW Start ---
+// Include block.h to access AuxPoW members
+#include <primitives/block.h>
+// Make setAuxPowScannedParentHashes accessible (defined in pow.cpp)
+extern std::set<uint256> setAuxPowScannedParentHashes GUARDED_BY(cs_main);
+// --- AuxPoW Ende ---
+
+
 #if defined(NDEBUG)
 # error "Palladium cannot be compiled without assertions."
 #endif
@@ -2190,6 +2200,19 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     int64_t nTime6 = GetTimeMicros(); nTimeCallbacks += nTime6 - nTime5;
     LogPrint(BCLog::BENCH, "    - Callbacks: %.2fms [%.2fs (%.2fms/blk)]\n", MILLI * (nTime6 - nTime5), nTimeCallbacks * MICRO, nTimeCallbacks * MILLI / nBlocksTotal);
 
+
+    // --- AuxPoW Start ---
+    // Mark parent block hash as used to prevent reuse
+    // const CBlock* pblock = pindex->GetBlock(); // Hol den Block vom Index
+    // In CChainState::ConnectBlock ist der Block als 'block' Parameter verfügbar
+    if (block.IsAuxpow() && block.m_auxpow) { // Prüfe den 'block' Parameter
+        AssertLockHeld(cs_main); // Sicherstellen, dass der Lock gehalten wird
+        setAuxPowScannedParentHashes.insert(block.m_auxpow->GetParentBlockHash());
+        LogPrintf("ConnectBlock: Added AuxPoW parent hash %s to used set for block %s (height %d)\n",
+                  block.m_auxpow->GetParentBlockHash().ToString(), block.GetHash().ToString(), pindex->nHeight);
+    }
+    // --- AuxPoW Ende ---
+
     return true;
 }
 
@@ -3269,11 +3292,38 @@ static bool FindUndoPos(BlockValidationState &state, int nFile, FlatFilePos &pos
 
 static bool CheckBlockHeader(const CBlockHeader& block, BlockValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
-    // Check proof of work matches claimed amount
-    if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
-        return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "high-hash", "proof of work failed");
+// Alt:
+// Check proof of work matches claimed amount
+// if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
+//     return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "high-hash", "proof of work failed");
+//
+// return true;
 
-    return true;
+// Neu:
+if (fCheckPOW) {
+    // --- AuxPoW Integration Start ---
+    // Basic PoW check is now just a format check of nBits,
+    // because the actual hash requirement depends on AuxPoW status (height).
+    // The full check is done in CheckBlock where height context is available.
+    arith_uint256 bnTarget;
+    bool fNegative, fOverflow;
+    bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
+
+    // Check range (Verwendet BlockValidationResult und neuere state.Invalid Syntax)
+    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(consensusParams.powLimit)) {
+         LogPrintf("CheckBlockHeader failed: nBits %08x invalid or out of range\n", block.nBits);
+         // Verwende die neuere state.Invalid Syntax mit BlockValidationResult
+         return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-diffbits", "bits CBlockHeader check failed");
+    }
+    // --- AuxPoW Integration Ende ---
+}
+
+// Check timestamp (Diese Prüfung existiert bereits in deinem Code um Zeile 1104)
+// if (block.GetBlockTime() > GetAdjustedTime() + MAX_FUTURE_BLOCK_TIME)
+//    return state.Invalid(BlockValidationResult::BLOCK_TIMESTAMP_TOO_FAR_IN_FUTURE, "time-too-new", "block timestamp too far in the future");
+
+
+return true; // Behalte das return true am Ende der Funktion
 }
 
 bool CheckBlock(const CBlock& block, BlockValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW, bool fCheckMerkleRoot)
@@ -3285,7 +3335,64 @@ bool CheckBlock(const CBlock& block, BlockValidationState& state, const Consensu
 
     // Check that the header is valid (particularly PoW).  This is mostly
     // redundant with the call in AcceptBlockHeader.
-    if (!CheckBlockHeader(block, state, consensusParams, fCheckPOW))
+    if (!CheckBlockHeader(block, state, consensusParams,fCheckPOW))
+
+
+        // --- AuxPoW Proof of Work Check ---
+    if (fCheckPOW) { // Füge die Prüfung hinzu, ob fCheckPOW überhaupt true ist
+    const CBlockIndex* pindexPrev = nullptr;
+    int nHeight = 0; // Höhe des *aktuellen* Blocks
+    {
+        LOCK(cs_main);
+        BlockMap::const_iterator mi = mapBlockIndex.find(block.hashPrevBlock);
+        if (mi != mapBlockIndex.end()) {
+            pindexPrev = mi->second;
+            nHeight = pindexPrev->nHeight + 1;
+        } else if (block.GetHash() == consensusParams.hashGenesisBlock) {
+             // Genesis block has no previous block
+             nHeight = 0;
+        } else {
+             LogPrintf("CheckBlock failed: Previous block %s not found in mapBlockIndex for block %s\n", block.hashPrevBlock.ToString(), block.GetHash().ToString());
+             // Verwende die neuere state.Invalid Syntax mit BlockValidationResult
+             return state.Invalid(BlockValidationResult::BLOCK_INVALID_PREV, "prev-blk-not-found", "Previous block not found");
+        }
+    }
+
+    bool fIsAuxpow = block.IsAuxpow();
+    bool fShouldBeAuxpow = (nHeight >= consensusParams.nAuxpowStartHeight);
+
+    LogPrintf("CheckBlock PoW Check: Block height %d, AuxPoW Start Height %d. ShouldBeAuxpow=%d, IsAuxpow=%d\n",
+              nHeight, consensusParams.nAuxpowStartHeight, fShouldBeAuxpow, fIsAuxpow);
+
+    if (fShouldBeAuxpow) {
+        // After the fork height, AuxPoW MUST be signaled and valid
+        if (!fIsAuxpow) {
+            LogPrintf("CheckBlock failed: AuxPoW flag missing after fork height %d for block %s (height %d)\n", consensusParams.nAuxpowStartHeight, block.GetHash().ToString(), nHeight);
+            return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-auxpow-version-missing", "AuxPoW flag missing in block version after fork height");
+        }
+         LogPrintf("CheckBlock: Checking AuxPoW for block %s (height %d)\n", block.GetHash().ToString(), nHeight);
+        if (!CheckAuxPowProofOfWork(block, consensusParams)) {
+             // Error already logged in CheckAuxPowProofOfWork
+             // Verwende die neuere state.Invalid Syntax
+             return state.Invalid(BlockValidationResult::BLOCK_POW_INVALID, "bad-auxpow", "Auxiliary proof of work check failed");
+        }
+    } else {
+        // Before the fork height, AuxPoW MUST NOT be signaled, and standard PoW must be valid
+        if (fIsAuxpow) {
+             LogPrintf("CheckBlock failed: AuxPoW flag set before fork height %d for block %s (height %d)\n", consensusParams.nAuxpowStartHeight, block.GetHash().ToString(), nHeight);
+             return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-auxpow-unexpected", "AuxPoW flag set in block version before fork height");
+        }
+         LogPrintf("CheckBlock: Checking standard PoW for block %s (height %d)\n", block.GetHash().ToString(), nHeight);
+        if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams)) {
+            // Error already logged in CheckProofOfWork
+            // state.Invalid() wird in CheckProofOfWork in neueren Versionen nicht gesetzt,
+            // daher hier explizit setzen.
+            return state.Invalid(BlockValidationResult::BLOCK_POW_INVALID, "high-hash", "proof of work failed");
+        }
+    }
+} // End fCheckPOW
+// --- AuxPoW Ende ---
+
         return false;
 
     // Check the merkle root.
@@ -3467,6 +3574,34 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, BlockValidatio
        (block.nVersion < 4 && nHeight >= consensusParams.BIP65Height))
             return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, strprintf("bad-version(0x%08x)", block.nVersion),
                                  strprintf("rejected nVersion=0x%08x block", block.nVersion));
+
+    // --- AuxPoW Start ---
+// Check version consistency with AuxPoW fork height
+// const Consensus::Params& consensusParams = params.GetConsensus(); // Hol dir Consensus::Params hier, falls nicht schon vorhanden
+bool fShouldBeAuxpow = (nHeight >= consensusParams.nAuxpowStartHeight); // nHeight sollte hier verfügbar sein
+bool fIsAuxpow = block.nVersion & CBlockHeader::AUXPOW_VERSION_BIT;
+
+if (fShouldBeAuxpow && !fIsAuxpow) {
+    LogPrintf("ContextualCheckBlockHeader failed: AuxPoW flag missing after fork height %d for block %s (height %d)\n", consensusParams.nAuxpowStartHeight, block.GetHash().ToString(), nHeight);
+    // Verwende die passende state.Invalid Syntax (BlockValidationResult oder ValidationInvalidReason)
+    return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-auxpow-version-missing-ctx", "AuxPoW flag missing in block version after fork height");
+}
+if (!fShouldBeAuxpow && fIsAuxpow) {
+     LogPrintf("ContextualCheckBlockHeader failed: AuxPoW flag set before fork height %d for block %s (height %d)\n", consensusParams.nAuxpowStartHeight, block.GetHash().ToString(), nHeight);
+     return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-auxpow-unexpected-ctx", "AuxPoW flag set in block version before fork height");
+}
+// Check base version bits if needed (e.g., BIP9) using VersionBitsState
+int32_t nBaseVersion = block.nVersion & ~CBlockHeader::AUXPOW_VERSION_BIT; // Check base version
+
+// Check against BIP 91/BIP 141/BIP 149 block version rules if applicable (Segwit related)
+// !!! ACHTUNG: Stelle sicher, dass `versionbitscache` hier verfügbar ist.
+// Wenn nicht, musst du es deklarieren oder die Funktion ohne Cache verwenden. !!!
+// VersionBitsCache versionbitscache; // Beispiel-Deklaration
+// if (!VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache).IsConsensusRequired(nBaseVersion)) {
+//     LogPrintf("ContextualCheckBlockHeader failed: Block version 0x%08x rejected by Segwit rules (height %d)\n", block.nVersion, nHeight);
+//     return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-version-segwit", "rejected by segwit activation");
+// }
+// --- AuxPoW Ende ---
 
     return true;
 }

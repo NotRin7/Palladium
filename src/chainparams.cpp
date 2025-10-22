@@ -73,8 +73,11 @@ public:
         consensus.BIP66Height = 29000;
         consensus.CSVHeight = 29000;
         consensus.SegwitHeight = 29000;
-
         consensus.MinBIP9WarningHeight = 29540; // segwit activation height + miner confirmation window
+
+
+
+        consensus.nAuxpowStartHeight = 310000;
 
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
@@ -199,8 +202,9 @@ public:
         consensus.SegwitHeight = 834624; // 00000000002b980fcd729daaa248fd9316a5200e9b367f4ff2c42453e84201ca
         consensus.MinBIP9WarningHeight = 836640; // segwit activation height + miner confirmation window
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
-        consensus.nPowTargetSpacing = 10 * 60;
+        consensus.nAuxpowStartHeight = 1;
+        consensus.nPowTargetTimespan = 24 * 60 * 60; // two weeks
+        consensus.nPowTargetSpacing = 2 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
