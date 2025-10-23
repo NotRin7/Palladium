@@ -92,7 +92,7 @@ zmqpubhashblock=tcp://0.0.0.0:28332
 
 ```bash
 # Clone repository
-git clone https://github.com/davide3011/palladiumcore.git
+git clone https://github.com/palladium-coin/palladiumcore.git
 cd palladiumcore
 
 # Generate build files
