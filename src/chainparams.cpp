@@ -160,11 +160,11 @@ public:
                 {69, uint256S("0x00000000ae75d0169080e9f0ddbcd80827eda623cfe1f4a2b1be6dcd49b916e6")},
                 {22170, uint256S("0x000000000000086425f826a2eb60c588aefd3e0783ddeccf0f4f0c985d348e69")},
                 {26619, uint256S("0x00000000000000d66df607146de7d9b423cf97150beb804d22439d199e868ca9")},
-		        {28879, uint256S("0x0000000000000017e9e74b9b403b775098905418b1333e9612f510af66746aa7")},
+		{28879, uint256S("0x0000000000000017e9e74b9b403b775098905418b1333e9612f510af66746aa7")},
                 {28925, uint256S("0x0000000000000014351dee34029945d5a4dea299ec8843626695c88b084b4d10")},
-		        {50000, uint256S("0x000000000000041fddecba51204a679b15ae47fc8aa658ef4ea7b953445d95e5")},
-		        {100000, uint256S("0x0000000000000850eba93bbc491f085e2c79c0c30c497292858c72e90cae69a5")},
-		        {142892, uint256S("0x000000000000829a0a4cab2f040151766df64edfe8817c565d101ae12b51411a")},
+		{50000, uint256S("0x000000000000041fddecba51204a679b15ae47fc8aa658ef4ea7b953445d95e5")},
+		{100000, uint256S("0x0000000000000850eba93bbc491f085e2c79c0c30c497292858c72e90cae69a5")},
+		{142892, uint256S("0x000000000000829a0a4cab2f040151766df64edfe8817c565d101ae12b51411a")},
                 {150000, uint256S("0x00000000000003212d753a62f2dec5b696ab22524cc49ba7cdc0d80c45d0eb18")},
                 {200000, uint256S("0x000000000000221a9e16556453fc86308b260d95d80c14bafaf053a09374e7eb")},
                 {250000, uint256S("0x0000000000012553b0303deaf5f2883deb66c901b6848dd03bb4a34f1774e0d0")},
@@ -201,10 +201,10 @@ public:
 
         
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S();
+        consensus.nMinimumChainWork = uint256S("0x00");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = consensus.hashGenesisBlock;
+        consensus.defaultAssumeValid = uint256S("0x00");
 
 
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -215,7 +215,7 @@ public:
         consensus.nRuleChangeActivationThreshold = 720;
         consensus.nMinerConfirmationWindow = 540;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
 
 
