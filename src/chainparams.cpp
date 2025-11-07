@@ -74,20 +74,17 @@ public:
         consensus.CSVHeight = 29000;
         consensus.SegwitHeight = 29000;
 
-        consensus.MinBIP9WarningHeight = 29540; // segwit activation height + miner confirmation window
+        consensus.MinBIP9WarningHeight = 29720; // segwit activation height + miner confirmation window
 
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
-        consensus.nPowTargetTimespan = 24 * 60 * 60;    // 86400 seconds
-        consensus.nPowTargetSpacing = 10 * 60;  // old (before block 29000/LWMA)
-        consensus.nPowTargetSpacingV2 = 2 * 60; //120 seconds
-
+        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // Must remain 14 days for historical block validation
+        consensus.nPowTargetSpacing = 10 * 60;
+        consensus.nPowTargetSpacingV2 = 2 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
-
-        //24h Timespan / 2 Min Spacing = 720 blocks
-        consensus.nRuleChangeActivationThreshold = 720;
-        consensus.nMinerConfirmationWindow = 540;   // 720 * 0.75
+        consensus.nRuleChangeActivationThreshold = 540;
+        consensus.nMinerConfirmationWindow = 720;
 
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
@@ -95,13 +92,11 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999;
 
 
-        // Chainwork Block 308000
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000009a5fd670f7a9ae6f2e");
+        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000001578157d557d557aa0");   
 
-        // Blockhash Block 308000
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x000000000000174621a036477c7edff5648052fa268133658561e9ca840831be");
+        consensus.defaultAssumeValid = uint256S("0x0000000000000014351dee34029945d5a4dea299ec8843626695c88b084b4d10");
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -162,13 +157,13 @@ public:
                 {26619, uint256S("0x00000000000000d66df607146de7d9b423cf97150beb804d22439d199e868ca9")},
 				{28879, uint256S("0x0000000000000017e9e74b9b403b775098905418b1333e9612f510af66746aa7")},
                 {28925, uint256S("0x0000000000000014351dee34029945d5a4dea299ec8843626695c88b084b4d10")},
-				{50000, uint256S("0x000000000000041fddecba51204a679b15ae47fc8aa658ef4ea7b953445d95e5")},
-				{100000, uint256S("0x0000000000000850eba93bbc491f085e2c79c0c30c497292858c72e90cae69a5")},
+                {50000, uint256S("0x000000000000041fddecba51204a679b15ae47fc8aa658ef4ea7b953445d95e5")},
+                {100000, uint256S("0x0000000000000850eba93bbc491f085e2c79c0c30c497292858c72e90cae69a5")},
 				{142892, uint256S("0x000000000000829a0a4cab2f040151766df64edfe8817c565d101ae12b51411a")},
                 {150000, uint256S("0x00000000000003212d753a62f2dec5b696ab22524cc49ba7cdc0d80c45d0eb18")},
                 {200000, uint256S("0x000000000000221a9e16556453fc86308b260d95d80c14bafaf053a09374e7eb")},
                 {250000, uint256S("0x0000000000012553b0303deaf5f2883deb66c901b6848dd03bb4a34f1774e0d0")},
-                {300000, uint256S("0x0000000000013acdf07a4fb988bbe9824c36eb421478a71c8196cf524dcba143")}
+                {300000, uint256S("0x0000000000013acdf07a4fb988bbe9824c36eb421478a71c8196cf524dcba143")},
             }
         };
 
