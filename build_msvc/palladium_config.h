@@ -265,7 +265,7 @@
 #define PACKAGE_NAME "Palladium Core"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Palladium Core 1.4.0"
+#define PACKAGE_STRING "Palladium Core 1.4.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "palladium"
@@ -274,7 +274,7 @@
 #define PACKAGE_URL "https://palladiumblockchain.net/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.4.0"
+#define PACKAGE_VERSION "1.4.1"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
