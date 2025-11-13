@@ -177,7 +177,7 @@ public:
 };
 
 /**
- * Testnet (v3)
+ * Testnet
  */
 class CTestNetParams : public CChainParams {
 public:
@@ -185,7 +185,7 @@ public:
         strNetworkID = CBaseChainParams::TESTNET;
         consensus.nSubsidyHalvingInterval = 210000;
        
-        consensus.BIP34Height = 0;
+        consensus.BIP34Height = 8192;
         consensus.BIP65Height = 0;
         consensus.BIP66Height = 0;
         consensus.CSVHeight = 0;
@@ -202,12 +202,13 @@ public:
 
 
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 24 * 60 * 60;
+        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
         consensus.nPowTargetSpacing = 2 * 60;
-        consensus.fPowAllowMinDifficultyBlocks = true;
+        consensus.nPowTargetSpacingV2 = 2 * 60;
+        consensus.fPowAllowMinDifficultyBlocks = true; // Enable minimum difficulty after 20 minutes of inactivity
         consensus.fPowNoRetargeting = false;
-        consensus.nRuleChangeActivationThreshold = 720;
-        consensus.nMinerConfirmationWindow = 540;
+        consensus.nRuleChangeActivationThreshold = 540;
+        consensus.nMinerConfirmationWindow = 720;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
