@@ -195,10 +195,10 @@ public:
 
         
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x00");
+        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000000000003077e5d4c957"); // Current testnet chainwork
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x00");
+        consensus.defaultAssumeValid = uint256S("0x0000000000f8470a0cc0f6210b23bbeba248bf937205e34588aa84596b72c3bd"); // Current best block hash
 
 
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
