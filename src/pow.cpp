@@ -19,6 +19,11 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     if ((pindexLast->nHeight >= 28930) && (pindexLast->nHeight <= 28999))
         return nProofOfWorkLimit;
 
+    // Special difficulty rule for testnet: If the new block's timestamp is more than 20 minutes
+    // then allow mining of a min-difficulty block. This rule has priority over LWMA.
+    if (params.fPowAllowMinDifficultyBlocks && pblock->GetBlockTime() > pindexLast->GetBlockTime() + 20 * 60)
+        return nProofOfWorkLimit;
+
     // For testnet, use LWMA from beginning to recalculate every block like mainnet
     if (params.fPowAllowMinDifficultyBlocks && pindexLast->nHeight >= 0)
         return LwmaCalculateNextWorkRequired(pindexLast, params);
@@ -31,19 +36,11 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     {
         if (params.fPowAllowMinDifficultyBlocks)
         {
-            // Special difficulty rule for testnet:
-            // If the new block's timestamp is more than 20 minutes
-            // then allow mining of a min-difficulty block.
-            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + 20 * 60)
-                return nProofOfWorkLimit;
-            else
-            {
-                // Return the last non-special-min-difficulty-rules-block
-                const CBlockIndex* pindex = pindexLast;
-                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
-                    pindex = pindex->pprev;
-                return pindex->nBits;
-            }
+            // Return the last non-special-min-difficulty-rules-block
+            const CBlockIndex* pindex = pindexLast;
+            while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                pindex = pindex->pprev;
+            return pindex->nBits;
         }
         return pindexLast->nBits;
     }
