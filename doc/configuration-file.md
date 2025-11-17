@@ -297,8 +297,8 @@ addnode=173.212.224.67:2333
 # These override mainnet settings when using testnet
 
 # Testnet ports
-port=18333
-rpcport=18332
+port=12333
+rpcport=12332
 maxconnections=25
 
 # Testnet RPC (different credentials recommended)
@@ -373,15 +373,6 @@ debug=coindb   # Database operations
 debug=qt       # GUI operations
 debug=mempool  # Memory pool operations
 ```
-
-## Migration from Bitcoin Core
-
-If you're migrating from Bitcoin Core, note these key differences:
-
-- Default ports are different (2333/2332 vs 8333/8332)
-- Network magic bytes are different
-- Genesis block is different
-- Some RPC methods may have different implementations
 
 ## Additional Resources
 

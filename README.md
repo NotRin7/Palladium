@@ -35,14 +35,6 @@ Create a file named `palladium.conf` in the appropriate directory for your opera
 **Complete Configuration Guide:**
 For detailed configuration instructions, network-specific settings, security best practices, and complete configuration examples, please refer to our comprehensive configuration guide: **[Palladium Configuration File Documentation](doc/configuration-file.md)**
 
-This guide covers:
-- ✅ Complete configuration examples for mainnet, testnet, and regtest
-- ✅ Security best practices and RPC configuration
-- ✅ Network-specific settings and port configurations  
-- ✅ Advanced options and performance tuning
-- ✅ Troubleshooting common configuration issues
-- ✅ Unified configuration file with network sections
-
 ## Building from Source
 
 ### Docker Build (Recommended)
