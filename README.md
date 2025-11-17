@@ -1,6 +1,6 @@
 # Palladium Core
 
-**Official Website:** [palladiumblockchain.net](https://palladiumblockchain.net)
+**Official Websites:** [palladiumblockchain.net](https://palladiumblockchain.net) and [palladium-coin.com](https://palladium-coin.com)
 ## Overview
 
 Palladium Core is a decentralized digital currency forked from Bitcoin, specifically designed to serve the palladium market ecosystem. Built upon the proven Bitcoin protocol foundation, Palladium Core delivers enhanced security, efficiency, and transparency for palladium-related transactions.
