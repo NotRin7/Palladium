@@ -10,7 +10,7 @@ improvements, as well as updated translations.
 
 Please report bugs using the issue tracker at GitHub:
 
-  <https://github.com/NotRin7/palladium/issues>
+  <https://github.com/palladium-coin/palladiumcore/issues>
 
 To receive security and update notifications, please subscribe to:
 
