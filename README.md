@@ -18,67 +18,30 @@ Palladium Core is a decentralized digital currency forked from Bitcoin, specific
 ### Installation
 
 1. **Download and Install**: Get the latest Palladium Core wallet from our [releases page](https://github.com/palladium-coin/palladiumcore/releases)
-2. **Configure**: Create the `palladium.conf` configuration file (see [Configuration](#advanced-configuration) section below)
+2. **Configure**: Create the `palladium.conf` configuration file (see [Configuration](#configuration) section below)
 3. **Launch the Core**: Start the Palladium Core application (includes automatic network synchronization)
 
 ### Configuration
 
-For enhanced connectivity and performance, you can create a configuration file:
+For enhanced connectivity and performance, you can create a configuration file. Palladium Core supports comprehensive configuration options for mainnet, testnet, and regtest networks.
 
-**Windows**: Navigate to `%appdata%/Palladium/`  
-**Linux**: Navigate to `/home/[username]/.palladium/`  
-**macOS**: Navigate to `~/Library/Application Support/Palladium/`
+**Configuration File Location:**
+- **Windows**: `%appdata%/Palladium/`  
+- **Linux**: `/home/[username]/.palladium/`  
+- **macOS**: `~/Library/Application Support/Palladium/`
 
-Create a file named `palladium.conf`. For users running a full node or requiring advanced functionality, we recommend the following comprehensive configuration:
+Create a file named `palladium.conf` in the appropriate directory for your operating system.
 
-```conf
-# Core Settings
-txindex=1
-server=1
-listen=1
-daemon=1
-discover=1
+**Complete Configuration Guide:**
+For detailed configuration instructions, network-specific settings, security best practices, and complete configuration examples, please refer to our comprehensive configuration guide: **[Palladium Configuration File Documentation](doc/configuration-file.md)**
 
-# RPC Configuration
-rpcuser=your_username_here
-rpcpassword=your_secure_password_here
-
-# Network Ports
-port=2333
-rpcport=2332
-
-# Connection Settings
-maxconnections=50
-fallbackfee=0.0001
-rpcallowip=192.168.0.0/16
-rpcbind=192.168.0.0/16
-
-# Trusted Nodes
-addnode=89.117.149.130:2333
-addnode=66.94.115.80:2333
-addnode=173.212.224.67:2333
-
-# ZeroMQ Configuration
-zmqpubrawblock=tcp://0.0.0.0:28334
-zmqpubrawtx=tcp://0.0.0.0:28335
-zmqpubhashblock=tcp://0.0.0.0:28332
-```
-
-**Security Warning**: Replace `your_username_here` and `your_secure_password_here` with strong, unique credentials.
-
-### Configuration Parameters Explained
-
-| Parameter | Description | Recommended Value |
-|-----------|-------------|-------------------|
-| `txindex` | Maintains full transaction index | `1` (enabled) |
-| `server` | Enables RPC server | `1` (enabled) |
-| `listen` | Accept incoming connections | `1` (enabled) |
-| `daemon` | Run in background mode | `1` (enabled) |
-| `discover` | Enable peer discovery | `1` (enabled) |
-| `maxconnections` | Maximum peer connections | `50` |
-| `fallbackfee` | Default transaction fee | `0.0001` PLM/kB |
-| `port` | P2P network port | `2333` |
-| `rpcport` | RPC server port | `2332` |
+This guide covers:
+- ✅ Complete configuration examples for mainnet, testnet, and regtest
+- ✅ Security best practices and RPC configuration
+- ✅ Network-specific settings and port configurations  
+- ✅ Advanced options and performance tuning
+- ✅ Troubleshooting common configuration issues
+- ✅ Unified configuration file with network sections
 
 ## Building from Source
 
