@@ -14,7 +14,6 @@ Creates native Linux 64-bit binaries using a Docker container based on Ubuntu 20
 
 ```bash
 cd docker-build                    # Navigate to the docker-build directory
-chmod +x build-linux-x86_64.sh     # Make the build script executable
 ./build-linux-x86_64.sh            # Run the build script
 ```
 
@@ -35,7 +34,6 @@ Creates ARM64 binaries for devices like Raspberry Pi 4+ through cross-compilatio
 
 ```bash
 cd docker-build                     # Navigate to the docker-build directory
-chmod +x build-linux-aarch64.sh     # Make the build script executable
 ./build-linux-aarch64.sh            # Run the cross-compilation build script
 ```
 
@@ -56,7 +54,6 @@ Creates ARM 32-bit binaries for older devices like Raspberry Pi 2/3 and Pi Zero.
 
 ```bash
 cd docker-build                     # Navigate to the docker-build directory
-chmod +x build-linux-armv7l.sh      # Make the build script executable
 ./build-linux-armv7l.sh             # Run the ARMv7l cross-compilation build script
 ```
 
@@ -77,7 +74,6 @@ Creates Windows executables through cross-compilation with MinGW-w64.
 
 ```bash
 cd docker-build                     # Navigate to the docker-build directory
-chmod +x build-windows.sh           # Make the build script executable
 ./build-windows.sh                  # Run the Windows cross-compilation build script
 ```
 
@@ -89,3 +85,9 @@ Executables will be available in `../build/windows/`:
 - `palladium-tx.exe` - Transaction utility
 - `palladium-wallet.exe` - Wallet utility
 - `palladium-qt.exe` - GUI application
+
+### Troubleshooting
+
+```bash
+chmod +x *.sh
+```
