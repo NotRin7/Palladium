@@ -89,5 +89,5 @@ Executables will be available in `../build/windows/`:
 ### Troubleshooting
 
 ```bash
-chmod +x *.sh
+cd docker-build chmod +x *.sh
 ```
