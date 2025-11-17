@@ -47,7 +47,7 @@ from the root of the repository.
 
 1. Clone the Palladium Core source code:
     ```shell
-    git clone https://github.com/NotRin7/palladium.git
+    git clone https://github.com/palladium-coin/palladiumcore.git
     cd palladium
     ```
 

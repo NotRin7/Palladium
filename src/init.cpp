@@ -579,7 +579,7 @@ void SetupServerArgs()
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/NotRin7/palladium>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/palladium-coin/palladiumcore>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i-%i").translated, 2024, COPYRIGHT_YEAR) + " ") + "\n" +
            "Copyright (C) 2009-2024 The Bitcoin Core developers" + "\n" +
