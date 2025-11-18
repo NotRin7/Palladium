@@ -61,6 +61,8 @@
 #include <QVBoxLayout>
 #include <QWindow>
 
+#include <QFile>
+#include <QTextStream>
 
 const std::string PalladiumGUI::DEFAULT_UIPLATFORM =
 #if defined(Q_OS_MAC)
@@ -79,7 +81,25 @@ PalladiumGUI::PalladiumGUI(interfaces::Node& node, const PlatformStyle *_platfor
     platformStyle(_platformStyle),
     m_network_style(networkStyle)
 {
+
+// --- DARK MODE AUTO-LOAD ---
     QSettings settings;
+    bool isDark = settings.value("darkModeEnabled", false).toBool();
+    if (isDark) {
+        // Stylesheet laden
+        QFile f(":/res/styles/dark.qss");
+        if (f.open(QFile::ReadOnly | QFile::Text)) {
+            QTextStream ts(&f);
+            qApp->setStyleSheet(ts.readAll());
+            f.close();
+        }
+        // Wichtig: Den Haken im Menü setzen!
+        if(themeAction) {
+             themeAction->setChecked(true);
+        }
+    }
+
+    //QSettings settings;
     if (!restoreGeometry(settings.value("MainWindowGeometry").toByteArray())) {
         // Restore failed (perhaps missing setting), center the window
         move(QGuiApplication::primaryScreen()->availableGeometry().center() - frameGeometry().center());
@@ -414,6 +434,10 @@ void PalladiumGUI::createActions()
 
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C), this), &QShortcut::activated, this, &PalladiumGUI::showDebugWindowActivateConsole);
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D), this), &QShortcut::activated, this, &PalladiumGUI::showDebugWindow);
+
+    themeAction = new QAction(tr("&Dark Mode"), this);
+    themeAction->setCheckable(true);
+    connect(themeAction, SIGNAL(triggered()), this, SLOT(toggleTheme()));
 }
 
 void PalladiumGUI::createMenuBar()
@@ -506,6 +530,8 @@ void PalladiumGUI::createMenuBar()
     help->addSeparator();
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
+
+    settings->addAction(themeAction);
 }
 
 void PalladiumGUI::createToolBars()
@@ -1461,5 +1487,25 @@ void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
     if (action)
     {
         optionsModel->setDisplayUnit(action->data());
+    }
+}
+void PalladiumGUI::toggleTheme()
+{
+    QSettings settings;
+    if (themeAction->isChecked()) {
+        // 1. Dark Mode laden
+        QFile f(":/res/styles/dark.qss");
+        if (f.open(QFile::ReadOnly | QFile::Text)) {
+            QTextStream ts(&f);
+            qApp->setStyleSheet(ts.readAll());
+            f.close();
+        }
+        // 2. Speichern, dass er an ist
+        settings.setValue("darkModeEnabled", true);
+    } else {
+        // 1. Standard Theme (Weiß)
+        qApp->setStyleSheet("");
+        // 2. Speichern, dass er aus ist
+        settings.setValue("darkModeEnabled", false);
     }
 }
