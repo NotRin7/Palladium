@@ -25,6 +25,11 @@
 
 #include <memory>
 
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+
 class ClientModel;
 class NetworkStyle;
 class Notificator;
@@ -175,6 +180,12 @@ private:
     const PlatformStyle *platformStyle;
     const NetworkStyle* const m_network_style;
 
+    // --- NEUE VARIABLEN FÜR UPDATE CHECKER START ---
+    QNetworkAccessManager* networkManager;
+    QString latestVersionUrl;
+    QWidget* updateAlertWidget; // Der Balken
+    // --- NEUE VARIABLEN FÜR UPDATE CHECKER ENDE ---
+
     /** Create the main UI actions. */
     void createActions();
     /** Create the menu bar and sub-menus. */
@@ -310,6 +321,13 @@ public Q_SLOTS:
     void showModalOverlay();
 
     void toggleTheme();
+
+private Q_SLOTS:
+    // --- NEUE SLOTS FÜR UPDATE CHECKER START ---
+    void checkUpdate();
+    void onUpdateResult(QNetworkReply* reply);
+    void openUpdateLink();
+    // --- NEUE SLOTS FÜR UPDATE CHECKER ENDE ---
 };
 
 class UnitDisplayStatusBarControl : public QLabel

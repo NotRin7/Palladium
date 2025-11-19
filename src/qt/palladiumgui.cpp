@@ -64,6 +64,14 @@
 #include <QFile>
 #include <QTextStream>
 
+#include <QUrl>
+#include <QDesktopServices>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QVersionNumber> // Falls Qt Version >= 5.6, sonst String-Vergleich
+#include "clientversion.h" // Wichtig um die eigene Version zu kennen
+
 const std::string PalladiumGUI::DEFAULT_UIPLATFORM =
 #if defined(Q_OS_MAC)
         "macosx"
@@ -231,6 +239,25 @@ PalladiumGUI::PalladiumGUI(interfaces::Node& node, const PlatformStyle *_platfor
 #ifdef Q_OS_MAC
     m_app_nap_inhibitor = new CAppNapInhibitor;
 #endif
+
+    // --- START EINFÜGUNG: UPDATE CHECKER ---
+    networkManager = new QNetworkAccessManager(this);
+    connect(networkManager, &QNetworkAccessManager::finished, this, &PalladiumGUI::onUpdateResult);
+    
+    updateAlertWidget = new QWidget(this);
+    updateAlertWidget->setVisible(false); 
+    
+    // Versuche das Widget oben im Layout des zentralen Widgets einzufügen
+    if (this->centralWidget() && this->centralWidget()->layout()) {
+        QBoxLayout* layout = qobject_cast<QBoxLayout*>(this->centralWidget()->layout());
+        if (layout) {
+            layout->insertWidget(0, updateAlertWidget);
+        }
+    }
+
+    // Check beim Start ausführen
+    checkUpdate();
+    // --- ENDE EINFÜGUNG: UPDATE CHECKER ---
 }
 
 PalladiumGUI::~PalladiumGUI()
@@ -1507,5 +1534,90 @@ void PalladiumGUI::toggleTheme()
         qApp->setStyleSheet("");
         // 2. Speichern, dass er aus ist
         settings.setValue("darkModeEnabled", false);
+    }
+}
+
+void PalladiumGUI::checkUpdate()
+{
+    // URL zu den GitHub Releases API
+    QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
+    
+    // GitHub verlangt einen User-Agent Header, sonst wird die Anfrage blockiert
+    request.setRawHeader("User-Agent", "PalladiumWallet");
+    
+    networkManager->get(request);
+}
+
+void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
+{
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray response = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(response);
+        QJsonObject obj = doc.object();
+
+
+        QString remoteVersionStr = obj["tag_name"].toString();
+        latestVersionUrl = obj["html_url"].toString(); // Link zum Release
+
+        // Entferne das 'v' falls vorhanden für den Vergleich
+        if(remoteVersionStr.startsWith("v")) {
+            remoteVersionStr.remove(0, 1);
+        }
+
+        // Aktuelle Client Version holen
+        QString currentVersionStr = QString::fromStdString(FormatFullVersion());
+        // Bereinige currentVersionStr falls nötig, FormatFullVersion gibt oft sowas wie "1.0.0-beta" zurück
+
+        // Einfacher String Vergleich oder QVersionNumber (besser)
+        // Hier nutzen wir eine einfache Logik: Wenn der String anders ist, nehmen wir an es ist neu.
+        // Für echte Produktion sollte QVersionNumber::fromString genutzt werden.
+        
+        // Beispiel mit QVersionNumber (benötigt Qt 5.6+):
+        /*
+        QVersionNumber local = QVersionNumber::fromString(currentVersionStr);
+        QVersionNumber remote = QVersionNumber::fromString(remoteVersionStr);
+        if (remote > local) { ... }
+        */
+
+        // Wenn du sicher bist, dass die GitHub Version neuer ist:
+        if (remoteVersionStr != currentVersionStr && !remoteVersionStr.isEmpty()) {
+            
+            // Erstelle das Layout für den Warnbalken
+            if (!updateAlertWidget->layout()) {
+                QHBoxLayout *layout = new QHBoxLayout(updateAlertWidget);
+                layout->setContentsMargins(10, 5, 10, 5);
+                
+                // Stylesheet für den roten Balken
+                updateAlertWidget->setStyleSheet("background-color: #d9534f; color: white; border-radius: 0px;");
+                updateAlertWidget->setMaximumHeight(50);
+
+                QLabel *label = new QLabel(tr("A new update is available! (%1)").arg(remoteVersionStr), updateAlertWidget);
+                label->setStyleSheet("font-weight: bold; border: none; background: transparent; color: white;");
+                
+                QPushButton *btn = new QPushButton(tr("Download"), updateAlertWidget);
+                btn->setStyleSheet("background-color: white; color: #d9534f; font-weight: bold; border-radius: 3px; padding: 3px 10px;");
+                connect(btn, &QPushButton::clicked, this, &PalladiumGUI::openUpdateLink);
+                
+                QPushButton *btnClose = new QPushButton("X", updateAlertWidget);
+                btnClose->setFlat(true);
+                btnClose->setStyleSheet("color: white; font-weight: bold; border: none; background: transparent;");
+                connect(btnClose, &QPushButton::clicked, updateAlertWidget, &QWidget::hide);
+
+                layout->addWidget(label);
+                layout->addStretch(); // Schiebt Button nach rechts
+                layout->addWidget(btn);
+                layout->addWidget(btnClose);
+            }
+            
+            updateAlertWidget->setVisible(true);
+        }
+    }
+    reply->deleteLater();
+}
+
+void PalladiumGUI::openUpdateLink()
+{
+    if (!latestVersionUrl.isEmpty()) {
+        QDesktopServices::openUrl(QUrl(latestVersionUrl));
     }
 }
