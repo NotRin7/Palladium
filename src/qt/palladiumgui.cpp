@@ -1591,7 +1591,7 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
                 updateAlertWidget->setStyleSheet("background-color: #d9534f; color: white; border-radius: 0px;");
                 updateAlertWidget->setMaximumHeight(50);
 
-                QLabel *label = new QLabel(tr("Eine neue Version von Palladium ist verfügbar! (%1)").arg(remoteVersionStr), updateAlertWidget);
+                QLabel *label = new QLabel(tr("A new update is available! (%1)").arg(remoteVersionStr), updateAlertWidget);
                 label->setStyleSheet("font-weight: bold; border: none; background: transparent; color: white;");
                 
                 QPushButton *btn = new QPushButton(tr("Download"), updateAlertWidget);
