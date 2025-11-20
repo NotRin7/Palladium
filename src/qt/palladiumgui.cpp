@@ -122,21 +122,33 @@ PalladiumGUI::PalladiumGUI(interfaces::Node& node, const PlatformStyle *_platfor
 
     rpcConsole = new RPCConsole(node, _platformStyle, nullptr);
     helpMessageDialog = new HelpMessageDialog(node, this, false);
+
+    // --- UPDATE CHECKER LAYOUT SETUP ---
+    QWidget* mainContainer = new QWidget(this);
+    QVBoxLayout* mainLayout = new QVBoxLayout(mainContainer);
+    mainLayout->setContentsMargins(0,0,0,0);
+    mainLayout->setSpacing(0);
+
+    updateAlertWidget = new QWidget(mainContainer);
+    updateAlertWidget->setVisible(false);
+    mainLayout->addWidget(updateAlertWidget);
+
 #ifdef ENABLE_WALLET
     if(enableWallet)
     {
         /** Create wallet frame and make it the central widget */
         walletFrame = new WalletFrame(_platformStyle, this);
-        setCentralWidget(walletFrame);
+        mainLayout->addWidget(walletFrame);
     } else
 #endif // ENABLE_WALLET
     {
         /* When compiled without wallet or -disablewallet is provided,
          * the central widget is the rpc console.
          */
-        setCentralWidget(rpcConsole);
+        mainLayout->addWidget(rpcConsole);
         Q_EMIT consoleShown(rpcConsole);
     }
+    setCentralWidget(mainContainer);
 
     // Accept D&D of URIs
     setAcceptDrops(true);
@@ -244,16 +256,7 @@ PalladiumGUI::PalladiumGUI(interfaces::Node& node, const PlatformStyle *_platfor
     networkManager = new QNetworkAccessManager(this);
     connect(networkManager, &QNetworkAccessManager::finished, this, &PalladiumGUI::onUpdateResult);
     
-    updateAlertWidget = new QWidget(this);
-    updateAlertWidget->setVisible(false); 
-    
-    // Versuche das Widget oben im Layout des zentralen Widgets einzufügen
-    if (this->centralWidget() && this->centralWidget()->layout()) {
-        QBoxLayout* layout = qobject_cast<QBoxLayout*>(this->centralWidget()->layout());
-        if (layout) {
-            layout->insertWidget(0, updateAlertWidget);
-        }
-    }
+    // updateAlertWidget is already initialized and added to layout above
 
     // Check beim Start ausführen
     checkUpdate();
@@ -1566,6 +1569,9 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
 
         // Aktuelle Client Version holen
         QString currentVersionStr = QString::fromStdString(FormatFullVersion());
+        if(currentVersionStr.startsWith("v")) {
+            currentVersionStr.remove(0, 1);
+        }
         // Bereinige currentVersionStr falls nötig, FormatFullVersion gibt oft sowas wie "1.0.0-beta" zurück
 
         // Einfacher String Vergleich oder QVersionNumber (besser)
