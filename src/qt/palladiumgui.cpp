@@ -101,10 +101,23 @@ PalladiumGUI::PalladiumGUI(interfaces::Node& node, const PlatformStyle *_platfor
             qApp->setStyleSheet(ts.readAll());
             f.close();
         }
-        // Wichtig: Den Haken im Menü setzen!
-        if(themeAction) {
-             themeAction->setChecked(true);
-        }
+        
+        // Palette setzen
+        QPalette darkPalette;
+        darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
+        darkPalette.setColor(QPalette::WindowText, Qt::white);
+        darkPalette.setColor(QPalette::Base, QColor(25, 25, 25));
+        darkPalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
+        darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
+        darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+        darkPalette.setColor(QPalette::Text, Qt::white);
+        darkPalette.setColor(QPalette::Button, QColor(53, 53, 53));
+        darkPalette.setColor(QPalette::ButtonText, Qt::white);
+        darkPalette.setColor(QPalette::BrightText, Qt::red);
+        darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
+        darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+        darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+        qApp->setPalette(darkPalette);
     }
 
     //QSettings settings;
@@ -156,6 +169,10 @@ PalladiumGUI::PalladiumGUI(interfaces::Node& node, const PlatformStyle *_platfor
     // Create actions for the toolbar, menu bar and tray/dock icon
     // Needs walletFrame to be initialized
     createActions();
+
+    if (isDark && themeAction) {
+        themeAction->setChecked(true);
+    }
 
     // Create application menu bar
     createMenuBar();
@@ -1530,11 +1547,31 @@ void PalladiumGUI::toggleTheme()
             qApp->setStyleSheet(ts.readAll());
             f.close();
         }
+        
+        // Palette setzen für bessere Kompatibilität
+        QPalette darkPalette;
+        darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
+        darkPalette.setColor(QPalette::WindowText, Qt::white);
+        darkPalette.setColor(QPalette::Base, QColor(25, 25, 25));
+        darkPalette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
+        darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
+        darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+        darkPalette.setColor(QPalette::Text, Qt::white);
+        darkPalette.setColor(QPalette::Button, QColor(53, 53, 53));
+        darkPalette.setColor(QPalette::ButtonText, Qt::white);
+        darkPalette.setColor(QPalette::BrightText, Qt::red);
+        darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
+        darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+        darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+        qApp->setPalette(darkPalette);
+
         // 2. Speichern, dass er an ist
         settings.setValue("darkModeEnabled", true);
     } else {
         // 1. Standard Theme (Weiß)
         qApp->setStyleSheet("");
+        qApp->setPalette(style()->standardPalette());
+        
         // 2. Speichern, dass er aus ist
         settings.setValue("darkModeEnabled", false);
     }
@@ -1602,7 +1639,13 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
                 
                 QPushButton *btn = new QPushButton(tr("Download"), updateAlertWidget);
                 btn->setStyleSheet("background-color: white; color: #d9534f; font-weight: bold; border-radius: 3px; padding: 3px 10px;");
-                connect(btn, &QPushButton::clicked, this, &PalladiumGUI::openUpdateLink);
+                
+                QString url = latestVersionUrl;
+                connect(btn, &QPushButton::clicked, [this, url]() {
+                    if(!QDesktopServices::openUrl(QUrl(url))) {
+                        QMessageBox::information(this, tr("Update Available"), tr("Please visit: %1").arg(url));
+                    }
+                });
                 
                 QPushButton *btnClose = new QPushButton("X", updateAlertWidget);
                 btnClose->setFlat(true);
