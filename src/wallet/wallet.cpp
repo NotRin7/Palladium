@@ -2396,7 +2396,8 @@ bool CWallet::SelectCoins(const std::vector<COutput>& vAvailableCoins, const CAm
                 return false;
             }
             // Just to calculate the marginal byte size
-            CInputCoin coin(wtx.tx->vout[outpoint.n], wtx.m_confirm.block_height, wtx.IsCoinBase());
+            int input_bytes = CalculateMaximumSignedInputSize(wtx.tx->vout[outpoint.n], this);
+            CInputCoin coin(wtx.tx, outpoint.n, input_bytes);
             nValueFromPresetInputs += coin.txout.nValue;
             if (coin.m_input_bytes <= 0) {
                 return false; // Not solvable, can't estimate size for fee
@@ -4468,14 +4469,28 @@ void CWallet::ScanForChatMessages(const CTransaction& tx)
 
              // 2. Find My Private Key
              // Strategy: Look at other outputs to see if they pay to me.
+             LegacyScriptPubKeyMan* spkm = GetLegacyScriptPubKeyMan();
+             if (!spkm) continue;
+
              for (const CTxOut& out : tx.vout) {
                  if (IsMine(out)) {
                      CTxDestination dest;
                      if (ExtractDestination(out.scriptPubKey, dest)) {
-                         const CKeyID* keyID = boost::get<CKeyID>(&dest);
-                         if (keyID) {
-                             CKey myPrivKey;
-                             if (GetKey(*keyID, myPrivKey)) {
+                         CKeyID keyID;
+                         const PKHash *pkhash = boost::get<PKHash>(&dest);
+                         if (pkhash) {
+                             keyID = ToKeyID(*pkhash);
+                         } else {
+                             const WitnessV0KeyHash *witkh = boost::get<WitnessV0KeyHash>(&dest);
+                             if (witkh) {
+                                 keyID = ToKeyID(*witkh);
+                             } else {
+                                 continue;
+                             }
+                         }
+
+                         CKey myPrivKey;
+                         if (spkm->GetKey(keyID, myPrivKey)) {
                                  // 3. Decrypt
                                  try {
                                      std::vector<unsigned char> secret = ChatCrypto::GenerateSharedSecret(myPrivKey, senderPubKey);
@@ -4486,7 +4501,6 @@ void CWallet::ScanForChatMessages(const CTransaction& tx)
                                          return; // Found and decrypted
                                      }
                                  } catch (...) {}
-                             }
                          }
                      }
                  }
