@@ -36,6 +36,7 @@
 #include <interfaces/node.h>
 #include <ui_interface.h>
 #include <util/system.h>
+#include <QSslConfiguration>
 
 #include <QAction>
 #include <QApplication>
@@ -1593,6 +1594,11 @@ void PalladiumGUI::checkUpdate()
     // URL zu den GitHub Releases API
     QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
     
+    // Ensure TLS 1.2 is used (important for Windows/GitHub)
+    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+    sslConfig.setProtocol(QSsl::TlsV1_2);
+    request.setSslConfiguration(sslConfig);
+
     // GitHub verlangt einen User-Agent Header, sonst wird die Anfrage blockiert
     request.setRawHeader("User-Agent", "PalladiumWallet");
     
@@ -1620,18 +1626,10 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
         if(currentVersionStr.startsWith("v")) {
             currentVersionStr.remove(0, 1);
         }
-        // Bereinige currentVersionStr falls nötig, FormatFullVersion gibt oft sowas wie "1.0.0-beta" zurück
-
-        // Einfacher String Vergleich oder QVersionNumber (besser)
-        // Hier nutzen wir eine einfache Logik: Wenn der String anders ist, nehmen wir an es ist neu.
-        // Für echte Produktion sollte QVersionNumber::fromString genutzt werden.
         
-        // Beispiel mit QVersionNumber (benötigt Qt 5.6+):
-        /*
-        QVersionNumber local = QVersionNumber::fromString(currentVersionStr);
-        QVersionNumber remote = QVersionNumber::fromString(remoteVersionStr);
-        if (remote > local) { ... }
-        */
+        // Clean up version strings (remove suffixes like -beta, -dirty, etc.)
+        if (currentVersionStr.contains("-")) currentVersionStr = currentVersionStr.split("-")[0];
+        if (remoteVersionStr.contains("-")) remoteVersionStr = remoteVersionStr.split("-")[0];
 
         // Wenn du sicher bist, dass die GitHub Version neuer ist:
         if (remoteVersionStr != currentVersionStr && !remoteVersionStr.isEmpty()) {
