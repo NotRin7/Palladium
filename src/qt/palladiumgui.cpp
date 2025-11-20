@@ -257,6 +257,9 @@ PalladiumGUI::PalladiumGUI(interfaces::Node& node, const PlatformStyle *_platfor
     });
 
     modalOverlay = new ModalOverlay(enableWallet, this->centralWidget());
+    if (themeAction->isChecked()) {
+        modalOverlay->setStyleSheet("background-color: #2b2b2b; color: white;");
+    }
     connect(labelBlocksIcon, &GUIUtil::ClickableLabel::clicked, this, &PalladiumGUI::showModalOverlay);
     connect(progressBar, &GUIUtil::ClickableProgressBar::clicked, this, &PalladiumGUI::showModalOverlay);
 #ifdef ENABLE_WALLET
@@ -1567,6 +1570,10 @@ void PalladiumGUI::toggleTheme()
 
         // 2. Speichern, dass er an ist
         settings.setValue("darkModeEnabled", true);
+        
+        if (modalOverlay) {
+            modalOverlay->setStyleSheet("background-color: #2b2b2b; color: white;");
+        }
     } else {
         // 1. Standard Theme (Weiß)
         qApp->setStyleSheet("");
@@ -1574,6 +1581,10 @@ void PalladiumGUI::toggleTheme()
         
         // 2. Speichern, dass er aus ist
         settings.setValue("darkModeEnabled", false);
+        
+        if (modalOverlay) {
+            modalOverlay->setStyleSheet("");
+        }
     }
 }
 
