@@ -1595,9 +1595,11 @@ void PalladiumGUI::checkUpdate()
     QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
     
     // Ensure TLS 1.2 is used (important for Windows/GitHub)
+#ifndef QT_NO_SSL
     QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
     sslConfig.setProtocol(QSsl::TlsV1_2);
     request.setSslConfiguration(sslConfig);
+#endif
 
     // GitHub verlangt einen User-Agent Header, sonst wird die Anfrage blockiert
     request.setRawHeader("User-Agent", "PalladiumWallet");
