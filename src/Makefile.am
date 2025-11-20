@@ -113,6 +113,7 @@ PALLADIUM_CORE_H = \
   chainparams.h \
   chainparamsbase.h \
   chainparamsseeds.h \
+  chat_crypto.h \
   checkqueue.h \
   clientversion.h \
   coins.h \
@@ -355,6 +356,7 @@ libpalladium_wallet_a_SOURCES = \
   wallet/walletdb.cpp \
   wallet/walletutil.cpp \
   wallet/coinselection.cpp \
+  chat_crypto.cpp \
   $(PALLADIUM_CORE_H)
 
 libpalladium_wallet_tool_a_CPPFLAGS = $(AM_CPPFLAGS) $(PALLADIUM_INCLUDES)

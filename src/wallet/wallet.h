@@ -1225,6 +1225,8 @@ public:
 
     //! Connect the signals from ScriptPubKeyMans to the signals in CWallet
     void ConnectScriptPubKeyManNotifiers();
+
+    void ScanForChatMessages(const CTransaction& tx);
 };
 
 /**

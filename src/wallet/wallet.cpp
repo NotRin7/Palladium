@@ -5,6 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <wallet/wallet.h>
+#include <chat_crypto.h>
 
 #include <chain.h>
 #include <consensus/consensus.h>
@@ -968,6 +969,8 @@ bool CWallet::AddToWalletIfInvolvingMe(const CTransactionRef& ptx, CWalletTx::Co
             // which means user may have to call abandontransaction again
             wtx.m_confirm = confirm;
 
+            ScanForChatMessages(*ptx);
+
             return AddToWallet(wtx, false);
         }
     }
@@ -1677,8 +1680,7 @@ int64_t CWallet::RescanFromTime(int64_t startTime, const WalletRescanReserver& r
  *         pruning or corruption). USER_ABORT if the rescan was aborted before
  *         it could complete.
  *
- * @pre Caller needs to make sure start_block (and the optional stop_block) are on
- * the main chain after to the addition of any new keys you want to detect
+ * @pre Caller needs to make sure start_block (and the optional stop_block) are on the main chain after to the addition of any new keys you want to detect
  * transactions for.
  */
 CWallet::ScanResult CWallet::ScanForWalletTransactions(const uint256& start_block, const uint256& stop_block, const WalletRescanReserver& reserver, bool fUpdate)
@@ -1733,7 +1735,7 @@ CWallet::ScanResult CWallet::ScanForWalletTransactions(const uint256& start_bloc
                 result.status = ScanResult::FAILURE;
                 break;
             }
-            for (size_t posInBlock = 0; posInBlock < block.vtx.size(); ++posInBlock) {
+            for (size_t posInBlock = 0; posInBlock < block.vtx.size(); posInBlock++) {
                 SyncTransaction(block.vtx[posInBlock], {CWalletTx::Status::CONFIRMED, *block_height, block_hash, (int)posInBlock}, fUpdate);
             }
             // scan succeeded, record block as most recent successfully scanned
@@ -2394,7 +2396,7 @@ bool CWallet::SelectCoins(const std::vector<COutput>& vAvailableCoins, const CAm
                 return false;
             }
             // Just to calculate the marginal byte size
-            CInputCoin coin(wtx.tx, outpoint.n, wtx.GetSpendSize(outpoint.n, false));
+            CInputCoin coin(wtx.tx->vout[outpoint.n], wtx.m_confirm.block_height, wtx.IsCoinBase());
             nValueFromPresetInputs += coin.txout.nValue;
             if (coin.m_input_bytes <= 0) {
                 return false; // Not solvable, can't estimate size for fee
@@ -2444,7 +2446,8 @@ bool CWallet::SelectCoins(const std::vector<COutput>& vAvailableCoins, const CAm
         (m_spend_zero_conf_change && SelectCoinsMinConf(value_to_select, CoinEligibilityFilter(0, 1, std::min((size_t)4, max_ancestors/3), std::min((size_t)4, max_descendants/3)), groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used)) ||
         (m_spend_zero_conf_change && SelectCoinsMinConf(value_to_select, CoinEligibilityFilter(0, 1, max_ancestors/2, max_descendants/2), groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used)) ||
         (m_spend_zero_conf_change && SelectCoinsMinConf(value_to_select, CoinEligibilityFilter(0, 1, max_ancestors-1, max_descendants-1), groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used)) ||
-        (m_spend_zero_conf_change && !fRejectLongChains && SelectCoinsMinConf(value_to_select, CoinEligibilityFilter(0, 1, std::numeric_limits<uint64_t>::max()), groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used));
+        (m_spend_zero_conf_change && !fRejectLongChains && SelectCoinsMinConf(value_to_select, CoinEligibilityFilter(0, 1, std::numeric_limits<uint64_t>::max()), groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used)) ||
+        (m_spend_zero_conf_change && !fRejectLongChains && SelectCoinsMinConf(value_to_select, CoinEligibilityFilter(0, 1, 0, 0), groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used));
 
     // because SelectCoinsMinConf clears the setCoinsRet, we now add the possible inputs to the coinset
     util::insert(setCoinsRet, setPresetCoins);
@@ -3511,7 +3514,7 @@ std::set<CTxDestination> CWallet::GetLabelAddresses(const std::string& label) co
     std::set<CTxDestination> result;
     for (const std::pair<const CTxDestination, CAddressBookData>& item : m_address_book)
     {
-        if (item.second.IsChange()) continue;
+        if ( item.second.IsChange()) continue;
         const CTxDestination& address = item.first;
         const std::string& strName = item.second.GetLabel();
         if (strName == label)
@@ -3641,6 +3644,13 @@ void CWallet::GetKeyBirthTimes(interfaces::Chain::Lock& locked_chain, std::map<C
                         rit->second = *height;
                 }
             }
+            // scan succeeded, record block as most recent successfully scanned
+            result.last_scanned_block = wtx.m_confirm.hashBlock;
+            result.last_scanned_height = *height;
+        } else {
+            // could not scan block, keep scanning but record this block as the most recent failure
+            result.last_failed_block = wtx.m_confirm.hashBlock;
+            result.status = ScanResult::FAILURE;
         }
     }
 
@@ -3826,7 +3836,7 @@ std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(interfaces::Chain& chain,
     if (gArgs.GetBoolArg("-zapwallettxes", false)) {
         chain.initMessage(_("Zapping all transactions from wallet...").translated);
 
-        std::unique_ptr<CWallet> tempWallet = MakeUnique<CWallet>(&chain, location, WalletDatabase::Create(location.GetPath()));
+        std::unique_ptr<CWallet> tempWallet = MakeUnique<CWallet>(&chain, location, WalletDatabase::CreateDummy());
         DBErrors nZapWalletRet = tempWallet->ZapWalletTx(vWtx);
         if (nZapWalletRet != DBErrors::LOAD_OK) {
             error = strprintf(_("Error loading %s: Wallet corrupted").translated, walletFile);
@@ -3840,7 +3850,7 @@ std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(interfaces::Chain& chain,
     bool fFirstRun = true;
     // TODO: Can't use std::make_shared because we need a custom deleter but
     // should be possible to use std::allocate_shared.
-    std::shared_ptr<CWallet> walletInstance(new CWallet(&chain, location, WalletDatabase::Create(location.GetPath())), ReleaseWallet);
+    std::shared_ptr<CWallet> walletInstance(new CWallet(&chain, location, WalletDatabase::CreateDummy()), ReleaseWallet);
     DBErrors nLoadWalletRet = walletInstance->LoadWallet(fFirstRun);
     if (nLoadWalletRet != DBErrors::LOAD_OK) {
         if (nLoadWalletRet == DBErrors::CORRUPT) {
@@ -4015,7 +4025,7 @@ std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(interfaces::Chain& chain,
             error = AmountErrMsg("maxtxfee", gArgs.GetArg("-maxtxfee", "")).translated;
             return nullptr;
         }
-        if (nMaxFee > HIGH_MAX_TX_FEE) {
+        if (nMaxFee > HIGH_TX_FEE_PER_KB) {
             warnings.push_back(_("-maxtxfee is set very high! Fees this large could be paid on a single transaction.").translated);
         }
         if (CFeeRate(nMaxFee, 1000) < chain.relayMinFee()) {
@@ -4421,5 +4431,66 @@ void CWallet::ConnectScriptPubKeyManNotifiers()
     for (const auto& spk_man : GetActiveScriptPubKeyMans()) {
         spk_man->NotifyWatchonlyChanged.connect(NotifyWatchonlyChanged);
         spk_man->NotifyCanGetAddressesChanged.connect(NotifyCanGetAddressesChanged);
+    }
+}
+
+void CWallet::ScanForChatMessages(const CTransaction& tx)
+{
+    // 1. Find OP_RETURN with Magic
+    for (const CTxOut& txout : tx.vout) {
+        // Check for OP_RETURN
+        if (txout.scriptPubKey.empty() || txout.scriptPubKey[0] != OP_RETURN) continue;
+
+        // Parse Payload
+        // script: OP_RETURN <pushdata op> <data>
+        // We need to extract <data>
+        CScript::const_iterator it = txout.scriptPubKey.begin() + 1;
+        std::vector<unsigned char> data;
+        opcodetype opcode;
+        if (txout.scriptPubKey.GetOp(it, opcode, data)) {
+             // Check Magic 'PLMC' (0x504C4D43)
+             if (data.size() < 4 + 33) continue; // Magic + Min PubKey
+             if (data[0] != 'P' || data[1] != 'L' || data[2] != 'M' || data[3] != 'C') continue;
+
+             // Extract Sender PubKey (assuming compressed 33 bytes for now, or check header)
+             // In sendchatmessage we did: payload.insert(..., myPubKey...)
+             // CPubKey can be 33 or 65 bytes.
+             CPubKey senderPubKey(data.begin() + 4, data.begin() + 4 + 33);
+             if (!senderPubKey.IsValid()) {
+                 // Try uncompressed
+                 if (data.size() >= 4 + 65) {
+                     senderPubKey.Set(data.begin() + 4, data.begin() + 4 + 65);
+                 }
+             }
+             if (!senderPubKey.IsValid()) continue;
+
+             std::vector<unsigned char> encryptedMsg(data.begin() + 4 + senderPubKey.size(), data.end());
+
+             // 2. Find My Private Key
+             // Strategy: Look at other outputs to see if they pay to me.
+             for (const CTxOut& out : tx.vout) {
+                 if (IsMine(out)) {
+                     CTxDestination dest;
+                     if (ExtractDestination(out.scriptPubKey, dest)) {
+                         const CKeyID* keyID = boost::get<CKeyID>(&dest);
+                         if (keyID) {
+                             CKey myPrivKey;
+                             if (GetKey(*keyID, myPrivKey)) {
+                                 // 3. Decrypt
+                                 try {
+                                     std::vector<unsigned char> secret = ChatCrypto::GenerateSharedSecret(myPrivKey, senderPubKey);
+                                     std::string msg = ChatCrypto::Decrypt(encryptedMsg, secret);
+                                     if (!msg.empty()) {
+                                         LogPrintf("CHAT MESSAGE received: %s\n", msg);
+                                         // Optional: Store in map/db
+                                         return; // Found and decrypted
+                                     }
+                                 } catch (...) {}
+                             }
+                         }
+                     }
+                 }
+             }
+        }
     }
 }

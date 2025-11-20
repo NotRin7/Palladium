@@ -9,6 +9,12 @@
 
 #include <consensus/validation.h>
 #include <coins.h>
+#include <chain.h>
+#include <validation.h>
+#include <interfaces/chain.h>
+#include <chainparams.h>
+
+static const int CHAT_ACTIVATION_BLOCK = 330000;
 
 
 CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
@@ -117,9 +123,24 @@ bool IsStandardTx(const CTransaction& tx, bool permit_bare_multisig, const CFeeR
             return false;
         }
 
-        if (whichType == TX_NULL_DATA)
+        if (whichType == TX_NULL_DATA) {
             nDataOut++;
-        else if ((whichType == TX_MULTISIG) && (!permit_bare_multisig)) {
+
+            {
+                LOCK(cs_main);
+                int currentHeight = ChainActive().Height();
+                unsigned int limit = 83;
+
+                if (currentHeight >= CHAT_ACTIVATION_BLOCK || Params().NetworkIDString() == CBaseChainParams::TESTNET) {
+                    limit = 520;
+                }
+
+                if (txout.scriptPubKey.size() > limit) {
+                    reason = "scriptpubkey-size";
+                    return false;
+                }
+            }
+        } else if ((whichType == TX_MULTISIG) && (!permit_bare_multisig)) {
             reason = "bare-multisig";
             return false;
         } else if (IsDust(txout, dust_relay_fee)) {

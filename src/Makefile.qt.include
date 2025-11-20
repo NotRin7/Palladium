@@ -10,6 +10,7 @@ include Makefile.qt_locale.include
 
 QT_FORMS_UI = \
   qt/forms/addressbookpage.ui \
+  qt/forms/chatpage.ui \
   qt/forms/askpassphrasedialog.ui \
   qt/forms/coincontroldialog.ui \
   qt/forms/createwalletdialog.ui \
@@ -98,6 +99,8 @@ QT_QRC_LOCALE = qt/palladium_locale.qrc
 PALLADIUM_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
+  qt/chatpage.h \
+  qt/chattablemodel.h \
   qt/askpassphrasedialog.h \
   qt/bantablemodel.h \
   qt/palladiumaddressvalidator.h \
@@ -232,6 +235,8 @@ PALLADIUM_QT_WINDOWS_CPP = qt/winshutdownmonitor.cpp
 PALLADIUM_QT_WALLET_CPP = \
   qt/addressbookpage.cpp \
   qt/addresstablemodel.cpp \
+  qt/chatpage.cpp \
+  qt/chattablemodel.cpp \
   qt/askpassphrasedialog.cpp \
   qt/coincontroldialog.cpp \
   qt/coincontroltreewidget.cpp \

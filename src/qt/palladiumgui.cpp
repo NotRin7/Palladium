@@ -267,7 +267,7 @@ PalladiumGUI::~PalladiumGUI()
 
     QSettings settings;
     settings.setValue("MainWindowGeometry", saveGeometry());
-    if(trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
+    if(trayIcon) // Hide tray icon, as deleting will linger until quit (on Ubuntu)
         trayIcon->hide();
 #ifdef Q_OS_MAC
     delete m_app_nap_inhibitor;
@@ -318,6 +318,13 @@ void PalladiumGUI::createActions()
     historyAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_4));
     tabGroup->addAction(historyAction);
 
+    chatAction = new QAction(platformStyle->SingleColorIcon(":/icons/edit"), tr("&Chat"), this);
+    chatAction->setStatusTip(tr("Chat with other users"));
+    chatAction->setToolTip(chatAction->statusTip());
+    chatAction->setCheckable(true);
+    chatAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
+    tabGroup->addAction(chatAction);
+
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
@@ -333,6 +340,8 @@ void PalladiumGUI::createActions()
     connect(receiveCoinsMenuAction, &QAction::triggered, this, &PalladiumGUI::gotoReceiveCoinsPage);
     connect(historyAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(historyAction, &QAction::triggered, this, &PalladiumGUI::gotoHistoryPage);
+    connect(chatAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+    connect(chatAction, &QAction::triggered, this, &PalladiumGUI::gotoChatPage);
 #endif // ENABLE_WALLET
 
     quitAction = new QAction(tr("E&xit"), this);
@@ -574,6 +583,7 @@ void PalladiumGUI::createToolBars()
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
+        toolbar->addAction(chatAction);
         overviewAction->setChecked(true);
 
 #ifdef ENABLE_WALLET
@@ -884,6 +894,12 @@ void PalladiumGUI::gotoHistoryPage()
 {
     historyAction->setChecked(true);
     if (walletFrame) walletFrame->gotoHistoryPage();
+}
+
+void PalladiumGUI::gotoChatPage()
+{
+    chatAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoChatPage();
 }
 
 void PalladiumGUI::gotoReceiveCoinsPage()
