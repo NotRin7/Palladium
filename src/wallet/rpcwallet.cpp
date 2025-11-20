@@ -984,11 +984,11 @@ static UniValue sendchatmessage(const JSONRPCRequest& request)
     
     const PKHash *pkhash = boost::get<PKHash>(&dest);
     if (pkhash) {
-        keyID = ToKeyID(*pkhash);
+        keyID = CKeyID(*pkhash);
     } else {
         const WitnessV0KeyHash *witkh = boost::get<WitnessV0KeyHash>(&dest);
         if (witkh) {
-            keyID = ToKeyID(*witkh);
+            keyID = CKeyID(*witkh);
         } else {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Address does not refer to a key (maybe script hash?)");
         }
@@ -1002,7 +1002,7 @@ static UniValue sendchatmessage(const JSONRPCRequest& request)
     CKey myPrivKey;
     CPubKey myPubKey;
     {
-        if (!spkm->GetKeyFromPool(myPubKey)) {
+        if (!spkm->GetKeyFromPool(myPubKey, OutputType::LEGACY, false)) {
              throw JSONRPCError(RPC_WALLET_ERROR, "Error generating new key for sender");
         }
         if (!spkm->GetKey(myPubKey.GetID(), myPrivKey)) {
@@ -1064,63 +1064,63 @@ void RegisterWalletRPCCommands(interfaces::Chain& chain, std::vector<std::unique
 static const CRPCCommand commands[] =
 { //  category              name                                actor (function)                argNames
     //  --------------------- ------------------------          -----------------------         ----------
-    { "rawtransactions",    "fundrawtransaction",               &fundrawtransaction,            {"hexstring","options","iswitness"} },
-    { "wallet",             "abandontransaction",               &abandontransaction,            {"txid"} },
-    { "wallet",             "abortrescan",                      &abortrescan,                   {} },
-    { "wallet",             "addmultisigaddress",               &addmultisigaddress,            {"nrequired","keys","label","address_type"} },
-    { "wallet",             "backupwallet",                     &backupwallet,                  {"destination"} },
-    { "wallet",             "bumpfee",                          &bumpfee,                       {"txid", "options"} },
-    { "wallet",             "createwallet",                     &createwallet,                  {"wallet_name", "disable_private_keys", "blank", "passphrase", "avoid_reuse"} },
-    { "wallet",             "dumpprivkey",                      &dumpprivkey,                   {"address"}  },
-    { "wallet",             "dumpwallet",                       &dumpwallet,                    {"filename"} },
-    { "wallet",             "encryptwallet",                    &encryptwallet,                 {"passphrase"} },
-    { "wallet",             "getaddressesbylabel",              &getaddressesbylabel,           {"label"} },
-    { "wallet",             "getaddressinfo",                   &getaddressinfo,                {"address"} },
+    //{ "rawtransactions",    "fundrawtransaction",               &fundrawtransaction,            {"hexstring","options","iswitness"} },
+    //{ "wallet",             "abandontransaction",               &abandontransaction,            {"txid"} },
+    //{ "wallet",             "abortrescan",                      &abortrescan,                   {} },
+    //{ "wallet",             "addmultisigaddress",               &addmultisigaddress,            {"nrequired","keys","label","address_type"} },
+    //{ "wallet",             "backupwallet",                     &backupwallet,                  {"destination"} },
+    //{ "wallet",             "bumpfee",                          &bumpfee,                       {"txid", "options"} },
+    //{ "wallet",             "createwallet",                     &createwallet,                  {"wallet_name", "disable_private_keys", "blank", "passphrase", "avoid_reuse"} },
+    //{ "wallet",             "dumpprivkey",                      &dumpprivkey,                   {"address"}  },
+    //{ "wallet",             "dumpwallet",                       &dumpwallet,                    {"filename"} },
+    //{ "wallet",             "encryptwallet",                    &encryptwallet,                 {"passphrase"} },
+    //{ "wallet",             "getaddressesbylabel",              &getaddressesbylabel,           {"label"} },
+    //{ "wallet",             "getaddressinfo",                   &getaddressinfo,                {"address"} },
     { "wallet",             "getbalance",                       &getbalance,                    {"dummy","minconf","include_watchonly","avoid_reuse"} },
-    { "wallet",             "getnewaddress",                    &getnewaddress,                 {"label","address_type"} },
-    { "wallet",             "getrawchangeaddress",              &getrawchangeaddress,           {"address_type"} },
-    { "wallet",             "getreceivedbyaddress",             &getreceivedbyaddress,          {"address","minconf"} },
-    { "wallet",             "getreceivedbylabel",               &getreceivedbylabel,            {"label","minconf"} },
-    { "wallet",             "gettransaction",                   &gettransaction,                {"txid","include_watchonly","verbose"} },
+    //{ "wallet",             "getnewaddress",                    &getnewaddress,                 {"label","address_type"} },
+    //{ "wallet",             "getrawchangeaddress",              &getrawchangeaddress,           {"address_type"} },
+    //{ "wallet",             "getreceivedbyaddress",             &getreceivedbyaddress,          {"address","minconf"} },
+    //{ "wallet",             "getreceivedbylabel",               &getreceivedbylabel,            {"label","minconf"} },
+    //{ "wallet",             "gettransaction",                   &gettransaction,                {"txid","include_watchonly","verbose"} },
     { "wallet",             "getunconfirmedbalance",            &getunconfirmedbalance,         {} },
-    { "wallet",             "getbalances",                      &getbalances,                   {} },
-    { "wallet",             "getwalletinfo",                    &getwalletinfo,                 {} },
-    { "wallet",             "importaddress",                    &importaddress,                 {"address","label","rescan","p2sh"} },
-    { "wallet",             "importmulti",                      &importmulti,                   {"requests","options"} },
-    { "wallet",             "importprivkey",                    &importprivkey,                 {"privkey","label","rescan"} },
-    { "wallet",             "importprunedfunds",                &importprunedfunds,             {"rawtransaction","txoutproof"} },
-    { "wallet",             "importpubkey",                     &importpubkey,                  {"pubkey","label","rescan"} },
-    { "wallet",             "importwallet",                     &importwallet,                  {"filename"} },
-    { "wallet",             "keypoolrefill",                    &keypoolrefill,                 {"newsize"} },
-    { "wallet",             "listaddressgroupings",             &listaddressgroupings,          {} },
-    { "wallet",             "listlabels",                       &listlabels,                    {"purpose"} },
-    { "wallet",             "listlockunspent",                  &listlockunspent,               {} },
-    { "wallet",             "listreceivedbyaddress",            &listreceivedbyaddress,         {"minconf","include_empty","include_watchonly","address_filter"} },
-    { "wallet",             "listreceivedbylabel",              &listreceivedbylabel,           {"minconf","include_empty","include_watchonly"} },
-    { "wallet",             "listsinceblock",                   &listsinceblock,                {"blockhash","target_confirmations","include_watchonly","include_removed"} },
-    { "wallet",             "listtransactions",                 &listtransactions,              {"label|dummy","count","skip","include_watchonly"} },
-    { "wallet",             "listunspent",                      &listunspent,                   {"minconf","maxconf","addresses","include_unsafe","query_options"} },
-    { "wallet",             "listwalletdir",                    &listwalletdir,                 {} },
-    { "wallet",             "listwallets",                      &listwallets,                   {} },
-    { "wallet",             "loadwallet",                       &loadwallet,                    {"filename"} },
-    { "wallet",             "lockunspent",                      &lockunspent,                   {"unlock","transactions"} },
-    { "wallet",             "removeprunedfunds",                &removeprunedfunds,             {"txid"} },
-    { "wallet",             "rescanblockchain",                 &rescanblockchain,              {"start_height", "stop_height"} },
+    //{ "wallet",             "getbalances",                      &getbalances,                   {} },
+    //{ "wallet",             "getwalletinfo",                    &getwalletinfo,                 {} },
+    //{ "wallet",             "importaddress",                    &importaddress,                 {"address","label","rescan","p2sh"} },
+    //{ "wallet",             "importmulti",                      &importmulti,                   {"requests","options"} },
+    //{ "wallet",             "importprivkey",                    &importprivkey,                 {"privkey","label","rescan"} },
+    //{ "wallet",             "importprunedfunds",                &importprunedfunds,             {"rawtransaction","txoutproof"} },
+    //{ "wallet",             "importpubkey",                     &importpubkey,                  {"pubkey","label","rescan"} },
+    //{ "wallet",             "importwallet",                     &importwallet,                  {"filename"} },
+    //{ "wallet",             "keypoolrefill",                    &keypoolrefill,                 {"newsize"} },
+    //{ "wallet",             "listaddressgroupings",             &listaddressgroupings,          {} },
+    //{ "wallet",             "listlabels",                       &listlabels,                    {"purpose"} },
+    //{ "wallet",             "listlockunspent",                  &listlockunspent,               {} },
+    //{ "wallet",             "listreceivedbyaddress",            &listreceivedbyaddress,         {"minconf","include_empty","include_watchonly","address_filter"} },
+    //{ "wallet",             "listreceivedbylabel",              &listreceivedbylabel,           {"minconf","include_empty","include_watchonly"} },
+    //{ "wallet",             "listsinceblock",                   &listsinceblock,                {"blockhash","target_confirmations","include_watchonly","include_removed"} },
+    //{ "wallet",             "listtransactions",                 &listtransactions,              {"label|dummy","count","skip","include_watchonly"} },
+    //{ "wallet",             "listunspent",                      &listunspent,                   {"minconf","maxconf","addresses","include_unsafe","query_options"} },
+    //{ "wallet",             "listwalletdir",                    &listwalletdir,                 {} },
+    //{ "wallet",             "listwallets",                      &listwallets,                   {} },
+    //{ "wallet",             "loadwallet",                       &loadwallet,                    {"filename"} },
+    //{ "wallet",             "lockunspent",                      &lockunspent,                   {"unlock","transactions"} },
+    //{ "wallet",             "removeprunedfunds",                &removeprunedfunds,             {"txid"} },
+    //{ "wallet",             "rescanblockchain",                 &rescanblockchain,              {"start_height", "stop_height"} },
     { "wallet",             "sendchatmessage",                  &sendchatmessage,               {"address","message"} },
     { "wallet",             "sendmany",                         &sendmany,                      {"dummy","amounts","minconf","comment","subtractfeefrom","replaceable","conf_target","estimate_mode"} },
-    { "wallet",             "sendtoaddress",                    &sendtoaddress,                 {"address","amount","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode","avoid_reuse"} },
-    { "wallet",             "sethdseed",                        &sethdseed,                     {"newkeypool","seed"} },
-    { "wallet",             "setlabel",                         &setlabel,                      {"address","label"} },
-    { "wallet",             "settxfee",                         &settxfee,                      {"amount"} },
-    { "wallet",             "setwalletflag",                    &setwalletflag,                 {"flag","value"} },
-    { "wallet",             "signmessage",                      &signmessage,                   {"address","message"} },
-    { "wallet",             "signrawtransactionwithwallet",     &signrawtransactionwithwallet,  {"hexstring","prevtxs","sighashtype"} },
-    { "wallet",             "unloadwallet",                     &unloadwallet,                  {"wallet_name"} },
-    { "wallet",             "walletcreatefundedpsbt",           &walletcreatefundedpsbt,        {"inputs","outputs","locktime","options","bip32derivs"} },
-    { "wallet",             "walletlock",                       &walletlock,                    {} },
-    { "wallet",             "walletpassphrase",                 &walletpassphrase,              {"passphrase","timeout"} },
-    { "wallet",             "walletpassphrasechange",           &walletpassphrasechange,        {"oldpassphrase","newpassphrase"} },
-    { "wallet",             "walletprocesspsbt",                &walletprocesspsbt,             {"psbt","sign","sighashtype","bip32derivs"} },
+    //{ "wallet",             "sendtoaddress",                    &sendtoaddress,                 {"address","amount","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode","avoid_reuse"} },
+    //{ "wallet",             "sethdseed",                        &sethdseed,                     {"newkeypool","seed"} },
+    //{ "wallet",             "setlabel",                         &setlabel,                      {"address","label"} },
+    //{ "wallet",             "settxfee",                         &settxfee,                      {"amount"} },
+    //{ "wallet",             "setwalletflag",                    &setwalletflag,                 {"flag","value"} },
+    //{ "wallet",             "signmessage",                      &signmessage,                   {"address","message"} },
+    //{ "wallet",             "signrawtransactionwithwallet",     &signrawtransactionwithwallet,  {"hexstring","prevtxs","sighashtype"} },
+    //{ "wallet",             "unloadwallet",                     &unloadwallet,                  {"wallet_name"} },
+    //{ "wallet",             "walletcreatefundedpsbt",           &walletcreatefundedpsbt,        {"inputs","outputs","locktime","options","bip32derivs"} },
+    //{ "wallet",             "walletlock",                       &walletlock,                    {} },
+    //{ "wallet",             "walletpassphrase",                 &walletpassphrase,              {"passphrase","timeout"} },
+    //{ "wallet",             "walletpassphrasechange",           &walletpassphrasechange,        {"oldpassphrase","newpassphrase"} },
+    //{ "wallet",             "walletprocesspsbt",                &walletprocesspsbt,             {"psbt","sign","sighashtype","bip32derivs"} },
 };
 // clang-format on
 
