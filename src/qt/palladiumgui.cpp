@@ -37,6 +37,7 @@
 #include <ui_interface.h>
 #include <util/system.h>
 #include <QSslConfiguration>
+#include <QSslSocket>
 
 #include <QAction>
 #include <QApplication>
@@ -1591,6 +1592,20 @@ void PalladiumGUI::toggleTheme()
 
 void PalladiumGUI::checkUpdate()
 {
+    LogPrintf("PalladiumGUI::checkUpdate: Checking for updates...\n");
+
+#ifndef QT_NO_SSL
+    if (!QSslSocket::supportsSsl()) {
+        LogPrintf("PalladiumGUI::checkUpdate: QSslSocket::supportsSsl() returned false. SSL not supported.\n");
+    } else {
+        LogPrintf("PalladiumGUI::checkUpdate: SSL is supported. Build: %s, Runtime: %s\n", 
+            QSslSocket::sslLibraryBuildVersionString().toStdString(), 
+            QSslSocket::sslLibraryVersionString().toStdString());
+    }
+#else
+    LogPrintf("PalladiumGUI::checkUpdate: QT_NO_SSL is defined. SSL support is disabled in build.\n");
+#endif
+
     // URL zu den GitHub Releases API
     QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
     
@@ -1604,12 +1619,16 @@ void PalladiumGUI::checkUpdate()
     // GitHub verlangt einen User-Agent Header, sonst wird die Anfrage blockiert
     request.setRawHeader("User-Agent", "PalladiumWallet");
     
+    // Redirects automatisch folgen (wichtig falls GitHub weiterleitet)
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+
     networkManager->get(request);
 }
 
 void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
 {
     if (reply->error() == QNetworkReply::NoError) {
+        LogPrintf("PalladiumGUI::onUpdateResult: Update check successful.\n");
         QByteArray response = reply->readAll();
         QJsonDocument doc = QJsonDocument::fromJson(response);
         QJsonObject obj = doc.object();
@@ -1633,8 +1652,11 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
         if (currentVersionStr.contains("-")) currentVersionStr = currentVersionStr.split("-")[0];
         if (remoteVersionStr.contains("-")) remoteVersionStr = remoteVersionStr.split("-")[0];
 
+        LogPrintf("PalladiumGUI::onUpdateResult: Remote version: %s, Current version: %s\n", remoteVersionStr.toStdString(), currentVersionStr.toStdString());
+
         // Wenn du sicher bist, dass die GitHub Version neuer ist:
         if (remoteVersionStr != currentVersionStr && !remoteVersionStr.isEmpty()) {
+            LogPrintf("PalladiumGUI::onUpdateResult: Update available!\n");
             
             // Erstelle das Layout für den Warnbalken
             if (!updateAlertWidget->layout()) {
@@ -1671,6 +1693,8 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
             
             updateAlertWidget->setVisible(true);
         }
+    } else {
+        LogPrintf("PalladiumGUI::onUpdateResult: Update check failed. Error: %s\n", reply->errorString().toStdString());
     }
     reply->deleteLater();
 }
