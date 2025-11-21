@@ -168,7 +168,6 @@ $(package)_config_opts_i686_android += -android-arch i686
 $(package)_build_env  = QT_RCC_TEST=1
 $(package)_build_env += QT_RCC_SOURCE_DATE_OVERRIDE=1
 
-$(package)_patches := fix_numeric_limits.patch
 endef
 
 define $(package)_fetch_cmds
