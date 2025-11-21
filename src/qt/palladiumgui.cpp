@@ -1596,14 +1596,13 @@ void PalladiumGUI::checkUpdate()
 
 #ifndef QT_NO_SSL
     if (!QSslSocket::supportsSsl()) {
-        LogPrintf("PalladiumGUI::checkUpdate: QSslSocket::supportsSsl() returned false. SSL not supported.\n");
-    } else {
-        LogPrintf("PalladiumGUI::checkUpdate: SSL is supported. Build: %s, Runtime: %s\n", 
-            QSslSocket::sslLibraryBuildVersionString().toStdString(), 
-            QSslSocket::sslLibraryVersionString().toStdString());
+        QString sslError = QString("SSL not supported.\nBuild: %1\nRuntime: %2\nPlease install OpenSSL libraries.")
+                           .arg(QSslSocket::sslLibraryBuildVersionString())
+                           .arg(QSslSocket::sslLibraryVersionString());
+        LogPrintf("PalladiumGUI::checkUpdate: %s\n", sslError.toStdString());
+        QMessageBox::critical(this, "Update Check Error", sslError);
+        return;
     }
-#else
-    LogPrintf("PalladiumGUI::checkUpdate: QT_NO_SSL is defined. SSL support is disabled in build.\n");
 #endif
 
     // URL zu den GitHub Releases API
@@ -1692,9 +1691,14 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
             }
             
             updateAlertWidget->setVisible(true);
+        } else {
+             // DEBUG: Show why it didn't trigger (Temporary for debugging)
+             QMessageBox::information(this, "Update Check Debug", 
+                QString("Check successful but no update detected.\nRemote: '%1'\nLocal: '%2'").arg(remoteVersionStr, currentVersionStr));
         }
     } else {
         LogPrintf("PalladiumGUI::onUpdateResult: Update check failed. Error: %s\n", reply->errorString().toStdString());
+        QMessageBox::warning(this, "Update Check Failed", QString("Network Error:\n%1").arg(reply->errorString()));
     }
     reply->deleteLater();
 }
