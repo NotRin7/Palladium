@@ -1592,16 +1592,24 @@ void PalladiumGUI::toggleTheme()
 
 void PalladiumGUI::checkUpdate()
 {
-    LogPrintf("PalladiumGUI::checkUpdate: Checking for updates...\n");
-
+    // Diagnostic: Check SSL Support explicitly
 #ifndef QT_NO_SSL
     if (!QSslSocket::supportsSsl()) {
-        QString sslError = QString("SSL not supported.\nBuild: %1\nRuntime: %2\nPlease install OpenSSL libraries.")
-                           .arg(QSslSocket::sslLibraryBuildVersionString())
-                           .arg(QSslSocket::sslLibraryVersionString());
-        LogPrintf("PalladiumGUI::checkUpdate: %s\n", sslError.toStdString());
-        QMessageBox::critical(this, "Update Check Error", sslError);
-        return;
+        QString buildVersion = QSslSocket::sslLibraryBuildVersionString();
+        QString loadedVersion = QSslSocket::sslLibraryVersionString(); // Likely empty if not supported
+        
+        QString msg = QString("SSL Support Missing.\n\n"
+                              "The application was built expecting: %1\n"
+                              "Currently loaded: %2\n\n"
+                              "Please ensure the correct OpenSSL DLLs are in the same folder as the executable.\n"
+                              "Common names: libssl-1_1-x64.dll, libcrypto-1_1-x64.dll, or ssleay32.dll, libeay32.dll.")
+                              .arg(buildVersion)
+                              .arg(loadedVersion.isEmpty() ? "None" : loadedVersion);
+                              
+        QMessageBox::critical(this, "SSL Error", msg);
+        // We continue anyway to let the network error happen and show that too, or return?
+        // Better return to avoid the generic "Protocol unknown" error which is confusing.
+        return; 
     }
 #endif
 
@@ -1627,7 +1635,6 @@ void PalladiumGUI::checkUpdate()
 void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
 {
     if (reply->error() == QNetworkReply::NoError) {
-        LogPrintf("PalladiumGUI::onUpdateResult: Update check successful.\n");
         QByteArray response = reply->readAll();
         QJsonDocument doc = QJsonDocument::fromJson(response);
         QJsonObject obj = doc.object();
@@ -1651,11 +1658,8 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
         if (currentVersionStr.contains("-")) currentVersionStr = currentVersionStr.split("-")[0];
         if (remoteVersionStr.contains("-")) remoteVersionStr = remoteVersionStr.split("-")[0];
 
-        LogPrintf("PalladiumGUI::onUpdateResult: Remote version: %s, Current version: %s\n", remoteVersionStr.toStdString(), currentVersionStr.toStdString());
-
         // Wenn du sicher bist, dass die GitHub Version neuer ist:
         if (remoteVersionStr != currentVersionStr && !remoteVersionStr.isEmpty()) {
-            LogPrintf("PalladiumGUI::onUpdateResult: Update available!\n");
             
             // Erstelle das Layout für den Warnbalken
             if (!updateAlertWidget->layout()) {
@@ -1691,14 +1695,9 @@ void PalladiumGUI::onUpdateResult(QNetworkReply* reply)
             }
             
             updateAlertWidget->setVisible(true);
-        } else {
-             // DEBUG: Show why it didn't trigger (Temporary for debugging)
-             QMessageBox::information(this, "Update Check Debug", 
-                QString("Check successful but no update detected.\nRemote: '%1'\nLocal: '%2'").arg(remoteVersionStr, currentVersionStr));
         }
     } else {
-        LogPrintf("PalladiumGUI::onUpdateResult: Update check failed. Error: %s\n", reply->errorString().toStdString());
-        QMessageBox::warning(this, "Update Check Failed", QString("Network Error:\n%1").arg(reply->errorString()));
+        LogPrintf("Update check failed: %s\n", reply->errorString().toStdString());
     }
     reply->deleteLater();
 }
