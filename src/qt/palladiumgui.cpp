@@ -2,9 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <qt/palladiumgui.h>
-
 #undef QT_NO_SSL // Force attempt to use SSL
+
+#include <qt/palladiumgui.h>
 
 #include <qt/palladiumunits.h>
 #include <qt/clientmodel.h>
@@ -1595,21 +1595,6 @@ void PalladiumGUI::toggleTheme()
 void PalladiumGUI::checkUpdate()
 {
     // URL zu den GitHub Releases API
-    QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
-    
-    // Ensure TLS 1.2 is used (important for Windows/GitHub)
-    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
-    sslConfig.setProtocol(QSsl::TlsV1_2);
-    request.setSslConfiguration(sslConfig);
-
-    // GitHub verlangt einen User-Agent Header, sonst wird die Anfrage blockiert
-    request.setRawHeader("User-Agent", "PalladiumWallet");
-    
-    // Redirects automatisch folgen (wichtig falls GitHub weiterleitet)
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-
-    networkManager->get(request);
-}
     QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
     
     // Ensure TLS 1.2 is used (important for Windows/GitHub)
