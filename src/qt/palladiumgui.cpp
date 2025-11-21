@@ -4,6 +4,8 @@
 
 #include <qt/palladiumgui.h>
 
+#undef QT_NO_SSL // Force attempt to use SSL
+
 #include <qt/palladiumunits.h>
 #include <qt/clientmodel.h>
 #include <qt/createwalletdialog.h>
@@ -1592,20 +1594,22 @@ void PalladiumGUI::toggleTheme()
 
 void PalladiumGUI::checkUpdate()
 {
-    // DEBUGGING: Force a popup to see what is going on
-    QString debugInfo;
-#ifdef QT_NO_SSL
-    debugInfo = "QT_NO_SSL is DEFINED.";
-#else
-    debugInfo = QString("QT_NO_SSL is NOT defined.\nSupports SSL: %1\nBuild Version: %2\nLoaded Version: %3")
-                .arg(QSslSocket::supportsSsl() ? "Yes" : "No")
-                .arg(QSslSocket::sslLibraryBuildVersionString())
-                .arg(QSslSocket::sslLibraryVersionString());
-#endif
-    
-    QMessageBox::information(this, "SSL Debug Info", debugInfo);
-
     // URL zu den GitHub Releases API
+    QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
+    
+    // Ensure TLS 1.2 is used (important for Windows/GitHub)
+    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+    sslConfig.setProtocol(QSsl::TlsV1_2);
+    request.setSslConfiguration(sslConfig);
+
+    // GitHub verlangt einen User-Agent Header, sonst wird die Anfrage blockiert
+    request.setRawHeader("User-Agent", "PalladiumWallet");
+    
+    // Redirects automatisch folgen (wichtig falls GitHub weiterleitet)
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+
+    networkManager->get(request);
+}
     QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
     
     // Ensure TLS 1.2 is used (important for Windows/GitHub)
