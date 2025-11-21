@@ -1,0 +1,10 @@
+--- old/qtbase/src/corelib/tools/qbytearraymatcher.h
++++ new/qtbase/src/corelib/tools/qbytearraymatcher.h
+@@ -40,6 +40,7 @@
+ #define QBYTEARRAYMATCHER_H
+ 
+ #include <QByteArray>
++#include <limits>
+ #include <QtCore/qglobal.h>
+ 
+ QT_BEGIN_NAMESPACE
