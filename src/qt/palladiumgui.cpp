@@ -1592,26 +1592,18 @@ void PalladiumGUI::toggleTheme()
 
 void PalladiumGUI::checkUpdate()
 {
-    // Diagnostic: Check SSL Support explicitly
-#ifndef QT_NO_SSL
-    if (!QSslSocket::supportsSsl()) {
-        QString buildVersion = QSslSocket::sslLibraryBuildVersionString();
-        QString loadedVersion = QSslSocket::sslLibraryVersionString(); // Likely empty if not supported
-        
-        QString msg = QString("SSL Support Missing.\n\n"
-                              "The application was built expecting: %1\n"
-                              "Currently loaded: %2\n\n"
-                              "Please ensure the correct OpenSSL DLLs are in the same folder as the executable.\n"
-                              "Common names: libssl-1_1-x64.dll, libcrypto-1_1-x64.dll, or ssleay32.dll, libeay32.dll.")
-                              .arg(buildVersion)
-                              .arg(loadedVersion.isEmpty() ? "None" : loadedVersion);
-                              
-        QMessageBox::critical(this, "SSL Error", msg);
-        // We continue anyway to let the network error happen and show that too, or return?
-        // Better return to avoid the generic "Protocol unknown" error which is confusing.
-        return; 
-    }
+    // DEBUGGING: Force a popup to see what is going on
+    QString debugInfo;
+#ifdef QT_NO_SSL
+    debugInfo = "QT_NO_SSL is DEFINED.";
+#else
+    debugInfo = QString("QT_NO_SSL is NOT defined.\nSupports SSL: %1\nBuild Version: %2\nLoaded Version: %3")
+                .arg(QSslSocket::supportsSsl() ? "Yes" : "No")
+                .arg(QSslSocket::sslLibraryBuildVersionString())
+                .arg(QSslSocket::sslLibraryVersionString());
 #endif
+    
+    QMessageBox::information(this, "SSL Debug Info", debugInfo);
 
     // URL zu den GitHub Releases API
     QNetworkRequest request(QUrl("https://api.github.com/repos/palladium-coin/palladiumcore/releases/latest"));
